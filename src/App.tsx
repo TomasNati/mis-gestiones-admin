@@ -1,20 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { fetchCategorias } from 'api/api';
+import { fetchCategorias } from "api/api";
+import { useQuery } from "@tanstack/react-query";
+
+function Example() {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["repoData"],
+    queryFn: async () => {
+      const categorias = await fetchCategorias();
+      return categorias;
+    },
+  });
+
+  if (isPending) return "Loading...";
+
+  if (error) return "An error has occurred: " + error.message;
+
+  return (
+    <div>
+      <h1>Categorias</h1>
+      <strong>👀 Cantidad de categorias: {data?.length}</strong>{" "}
+    </div>
+  );
+}
 
 function App() {
   const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const loadCategorias = async () => {
-      const categorias = await fetchCategorias();
-      console.log(categorias);
-    };
-
-    loadCategorias();
-  }, []);
 
   return (
     <>
@@ -38,6 +51,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <Example />
     </>
   );
 }

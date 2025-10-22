@@ -1,5 +1,5 @@
 import axios from "axios";
-import { type Categoria, type Subcategoria } from "../model/types";
+import { type Categoria, type Subcategoria } from "model/types";
 const backendAPI = import.meta.env.VITE_BACKEND_API;
 
 const apiClient = axios.create({
