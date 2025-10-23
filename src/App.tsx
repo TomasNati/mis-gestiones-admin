@@ -1,11 +1,35 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import { fetchCategorias } from "api/api";
 import { useQuery } from "@tanstack/react-query";
+import type { Subcategoria } from "model/types";
+import { useState } from "react";
 
-function Example() {
+interface SubcategoriaTableProps {
+  subcategorias: Subcategoria[];
+}
+
+const SubcategoriaTable = ({ subcategorias }: SubcategoriaTableProps) => (
+  <table>
+    <tbody>
+      {subcategorias.map(({ nombre }) => (
+        <tr>
+          <td>
+            <span>🖊️</span>
+            <span>🗑️</span>
+            <span>▼</span>
+            {/* <span>▲</span> */}
+          </td>
+          <td>{nombre}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+function Categorias() {
+  const [categoriasExpandidas, setCategoriasExpandidas] = useState<number[]>(
+    [],
+  );
   const { isPending, error, data } = useQuery({
     queryKey: ["repoData"],
     queryFn: async () => {
@@ -18,40 +42,69 @@ function Example() {
 
   if (error) return "An error has occurred: " + error.message;
 
+  if (!data.length) {
+    return (
+      <p>
+        <strong>No se encontraron categorias</strong>
+      </p>
+    );
+  }
+
+  const handleExpandirClicked = (fila: number) => {
+    const newExpandidas = categoriasExpandidas.includes(fila)
+      ? categoriasExpandidas.filter((row) => row != fila)
+      : [...categoriasExpandidas, fila];
+    setCategoriasExpandidas(newExpandidas);
+  };
+
   return (
-    <div>
-      <h1>Categorias</h1>
-      <strong>👀 Cantidad de categorias: {data?.length}</strong>{" "}
-    </div>
+    <table border={1}>
+      <caption>Categorias</caption>
+      <thead>
+        <tr>
+          <th>Acciones</th>
+          <th>Nombre</th>
+          <th>Subcategorias</th>
+          <th>Comentarios</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((categoria, index) => (
+          <tr>
+            <td>
+              <span>🖊️</span>
+              <span>🗑️</span>
+              <span onClick={() => handleExpandirClicked(index)}>
+                {categoriasExpandidas.includes(index) ? "▲" : "▼"}
+              </span>
+            </td>
+            <td>{categoria.nombre}</td>
+            <td>
+              {categoriasExpandidas.includes(index) ? (
+                <SubcategoriaTable
+                  subcategorias={categoria.subcategorias || []}
+                />
+              ) : (
+                `Hay ${categoria.subcategorias?.length} subcategorias`
+              )}
+            </td>
+            <td>{categoria.comentarios}</td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colSpan={4}>Total: {data.length}</td>
+        </tr>
+      </tfoot>
+    </table>
   );
 }
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <Example />
+      <Categorias />
     </>
   );
 }
