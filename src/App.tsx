@@ -3,6 +3,7 @@ import { fetchCategorias } from "api/api";
 import { useQuery } from "@tanstack/react-query";
 import type { Subcategoria } from "model/types";
 import { useState } from "react";
+import { Categorias } from "./Categorias";
 
 interface SubcategoriaTableProps {
   subcategorias: Subcategoria[];
@@ -26,7 +27,7 @@ const SubcategoriaTable = ({ subcategorias }: SubcategoriaTableProps) => (
   </table>
 );
 
-function Categorias() {
+function CategoriasBasic() {
   const [categoriasExpandidas, setCategoriasExpandidas] = useState<number[]>(
     [],
   );
@@ -102,9 +103,29 @@ function Categorias() {
 }
 
 function App() {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["repoData"],
+    queryFn: async () => {
+      const categorias = await fetchCategorias();
+      return categorias;
+    },
+  });
+
+  if (isPending) return "Loading...";
+
+  if (error) return "An error has occurred: " + error.message;
+
+  if (!data.length) {
+    return (
+      <p>
+        <strong>No se encontraron categorias</strong>
+      </p>
+    );
+  }
+
   return (
     <>
-      <Categorias />
+      <Categorias categorias={data} />
     </>
   );
 }
