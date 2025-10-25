@@ -123,11 +123,7 @@ function App() {
     );
   }
 
-  return (
-    <>
-      <Categorias categorias={data} />
-    </>
-  );
+  return <Categorias categorias={data} />;
 }
 
 export default App;
