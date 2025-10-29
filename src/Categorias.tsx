@@ -5,9 +5,9 @@ import {
   MRT_Table,
   useMaterialReactTable,
   type MRT_ColumnDef,
-  // MRT_ToggleDensePaddingButton,
-  // MRT_ToggleFullScreenButton,
-  // MRT_ToggleGlobalFilterButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFullScreenButton,
+  MRT_ToggleFiltersButton,
 } from "material-react-table";
 
 interface SubcategoriaProps {
@@ -74,6 +74,13 @@ export const Categorias = ({ categorias }: CategoriaProps) => {
         pageIndex: 0,
       },
     },
+    renderToolbarInternalActions: ({ table }) => (
+      <>
+        <MRT_ToggleFiltersButton table={table} />
+        <MRT_ToggleDensePaddingButton table={table} />
+        <MRT_ToggleFullScreenButton table={table} />
+      </>
+    ),
   });
 
   return <MaterialReactTable table={table} />;
