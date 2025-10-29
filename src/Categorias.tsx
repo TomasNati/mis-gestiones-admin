@@ -2,8 +2,12 @@ import type { Categoria, Subcategoria } from "model/types";
 import { useMemo } from "react";
 import {
   MaterialReactTable,
+  MRT_Table,
   useMaterialReactTable,
   type MRT_ColumnDef,
+  // MRT_ToggleDensePaddingButton,
+  // MRT_ToggleFullScreenButton,
+  // MRT_ToggleGlobalFilterButton,
 } from "material-react-table";
 
 interface SubcategoriaProps {
@@ -24,9 +28,16 @@ const Subcategorias = ({ subcategorias }: SubcategoriaProps) => {
   const tableSubcategorias = useMaterialReactTable({
     columns: columnsSubcategorias,
     data: subcategorias || [],
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enablePagination: false,
+    initialState: {
+      sorting: [{ id: "nombre", desc: false }],
+      density: "compact",
+    },
   });
 
-  return <MaterialReactTable table={tableSubcategorias} />;
+  return <MRT_Table table={tableSubcategorias} />;
 };
 
 interface CategoriaProps {
@@ -38,11 +49,13 @@ export const Categorias = ({ categorias }: CategoriaProps) => {
       {
         accessorKey: "nombre",
         header: "Nombre",
+        size: 100,
       },
       {
         accessorFn: (categoria: Categoria) => categoria.subcategorias?.length,
         id: "cantidadSubcategorias",
         header: "Cantidad de Subcategorias",
+        size: 240,
       },
     ],
     [],
@@ -54,6 +67,13 @@ export const Categorias = ({ categorias }: CategoriaProps) => {
     renderDetailPanel: ({ row }) => (
       <Subcategorias subcategorias={row.original.subcategorias || []} />
     ),
+    initialState: {
+      sorting: [{ id: "nombre", desc: false }],
+      pagination: {
+        pageSize: 15,
+        pageIndex: 0,
+      },
+    },
   });
 
   return <MaterialReactTable table={table} />;
