@@ -9,6 +9,7 @@ import {
   MRT_ToggleFullScreenButton,
   MRT_ToggleFiltersButton,
 } from "material-react-table";
+import { useFetchCategorias } from "./hooks/useFetchCategorias";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -40,10 +41,7 @@ const Subcategorias = ({ subcategorias }: SubcategoriaProps) => {
   return <MRT_Table table={tableSubcategorias} />;
 };
 
-interface CategoriaProps {
-  categorias: Categoria[];
-}
-export const Categorias = ({ categorias }: CategoriaProps) => {
+export const Categorias = () => {
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
       {
@@ -61,9 +59,12 @@ export const Categorias = ({ categorias }: CategoriaProps) => {
     [],
   );
 
+  const { isError, isLoading, data } = useFetchCategorias();
+
   const table = useMaterialReactTable({
     columns,
-    data: categorias,
+    data,
+    rowCount: data.length,
     renderDetailPanel: ({ row }) => (
       <Subcategorias subcategorias={row.original.subcategorias || []} />
     ),
@@ -74,6 +75,16 @@ export const Categorias = ({ categorias }: CategoriaProps) => {
         pageIndex: 0,
       },
     },
+    state: {
+      isLoading,
+      showAlertBanner: isError,
+    },
+    muiToolbarAlertBannerProps: isError
+      ? {
+          color: "error",
+          children: "Error loading data",
+        }
+      : undefined,
     renderToolbarInternalActions: ({ table }) => (
       <>
         <MRT_ToggleFiltersButton table={table} />
