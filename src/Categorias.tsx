@@ -9,10 +9,14 @@ import {
   MRT_ToggleFullScreenButton,
   MRT_ToggleFiltersButton,
   type MRT_TableOptions,
+  type MRT_Row,
+  createRow,
 } from "material-react-table";
 import { useFetchCategorias } from "./hooks/useFetchCategorias";
-import { IconButton } from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -48,6 +52,9 @@ export const Categorias = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
+  const [creatingRowIndex, setCreatingRowIndex] = useState<
+    number | undefined
+  >();
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -96,6 +103,13 @@ export const Categorias = () => {
       table.setEditingRow(null); //exit editing mode
     };
 
+  const openDeleteConfirmModal = (row: MRT_Row<Categoria>) => {
+    if (window.confirm("Are you sure you want to delete this Categoria?")) {
+      console.log("Delete:", row.original.id);
+      //deleteUser(row.original.id);
+    }
+  };
+
   const table = useMaterialReactTable({
     columns,
     data,
@@ -120,29 +134,64 @@ export const Categorias = () => {
           children: "Error loading data",
         }
       : undefined,
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Button
+        startIcon={<AddCircleOutlineIcon />}
+        variant="outlined"
+        onClick={() => {
+          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
+          //or you can pass in a row object to set default values with the `createRow` helper function
+          // table.setCreatingRow(
+          //   createRow(table, {
+          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
+          //   }),
+          // );
+        }}
+      >
+        Crear Categoria
+      </Button>
+    ),
     renderToolbarInternalActions: ({ table }) => (
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
+      <>
+        <MRT_ToggleFiltersButton table={table} />
+        <MRT_ToggleDensePaddingButton table={table} />
+        <MRT_ToggleFullScreenButton table={table} />
+      </>
+    ),
+    renderRowActions: ({ row, staticRowIndex, table }) => (
+      <Box sx={{ display: "flex" }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => table.setEditingRow(row)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Agregar Subcategoría">
           <IconButton
             onClick={() => {
-              table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-              //or you can pass in a row object to set default values with the `createRow` helper function
-              // table.setCreatingRow(
-              //   createRow(table, {
-              //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-              //   }),
-              // );
+              setCreatingRowIndex((staticRowIndex || 0) + 1);
+              table.setCreatingRow(
+                createRow(
+                  table,
+                  {
+                    id: null!,
+                    nombre: "",
+                    subcategorias: [],
+                  },
+                  -1,
+                  row.depth + 1,
+                ),
+              );
             }}
           >
             <AddCircleOutlineIcon />
           </IconButton>
-        </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <MRT_ToggleFiltersButton table={table} />
-          <MRT_ToggleDensePaddingButton table={table} />
-          <MRT_ToggleFullScreenButton table={table} />
-        </div>
-      </div>
+        </Tooltip>
+      </Box>
     ),
     createDisplayMode: "modal",
     editDisplayMode: "modal",
