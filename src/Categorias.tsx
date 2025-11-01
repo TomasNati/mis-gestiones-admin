@@ -138,6 +138,7 @@ export const Categorias = () => {
       <Button
         startIcon={<AddCircleOutlineIcon />}
         variant="outlined"
+        color="secondary"
         onClick={() => {
           table.setCreatingRow(true); //simplest way to open the create row modal with no default values
           //or you can pass in a row object to set default values with the `createRow` helper function
