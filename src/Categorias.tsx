@@ -17,6 +17,7 @@ import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { validateCategoria } from "model/helpers";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -52,54 +53,71 @@ export const Categorias = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
-  const [creatingRowIndex, setCreatingRowIndex] = useState<
-    number | undefined
-  >();
+  // const [creatingRowIndex, setCreatingRowIndex] = useState<
+  //   number | undefined
+  // >();
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
       {
         accessorKey: "nombre",
-        header: "Categoria",
+        header: "Nombre",
         size: 100,
+        muiEditTextFieldProps: {
+          required: true,
+          error: !!validationErrors?.nombre,
+          helperText: validationErrors?.nombre,
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              nombre: undefined,
+            }),
+        },
       },
       {
         accessorFn: (categoria: Categoria) => categoria.subcategorias?.length,
         id: "cantidadSubcategorias",
         header: "Cantidad de Subcategorias",
+        enableEditing: false,
         size: 240,
       },
     ],
-    [],
+    [validationErrors],
   );
 
   const { isError, isLoading, data } = useFetchCategorias();
 
   const handleCreateCategoria: MRT_TableOptions<Categoria>["onCreatingRowSave"] =
     async ({ values, table }) => {
-      console.log("Validation errors:", validationErrors);
-      // const newValidationErrors = validateCategoria(values);
-      // if (Object.values(newValidationErrors).some((error) => error)) {
-      //   setValidationErrors(newValidationErrors);
-      //   return;
-      // }
-      console.log("Creating categoria:", values);
+      const newValidationErrors = validateCategoria(values);
+      if (Object.values(newValidationErrors).some((error) => error)) {
+        setValidationErrors(newValidationErrors);
+        return;
+      }
       setValidationErrors({});
-      //await createCategoria(values);
+      const categoria: Partial<Categoria> = {
+        nombre: values.nombre,
+      };
+      console.log("Create values:", categoria);
+      //await createCategoria(categoria);
       table.setCreatingRow(null); //exit creating mode
     };
 
   //UPDATE action
   const handleSaveCategoria: MRT_TableOptions<Categoria>["onEditingRowSave"] =
-    async ({ values, table }) => {
-      // const newValidationErrors = validateCategoria(values);
-      // if (Object.values(newValidationErrors).some((error) => error)) {
-      //   setValidationErrors(newValidationErrors);
-      //   return;
-      // }
-      console.log("Saving categoria:", values);
+    async ({ values, table, row }) => {
+      const newValidationErrors = validateCategoria(values);
+      if (Object.values(newValidationErrors).some((error) => error)) {
+        setValidationErrors(newValidationErrors);
+        return;
+      }
       setValidationErrors({});
-      //await updateCategoria(values);
+      const categoriaUpdated: Categoria = {
+        ...row.original,
+        nombre: values.nombre,
+      };
+      console.log("Edit values:", categoriaUpdated);
+      //await updateCategoria(categoriaUpdated);
       table.setEditingRow(null); //exit editing mode
     };
 
@@ -159,7 +177,8 @@ export const Categorias = () => {
         <MRT_ToggleFullScreenButton table={table} />
       </>
     ),
-    renderRowActions: ({ row, staticRowIndex, table }) => (
+    //, staticRowIndex
+    renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
@@ -174,7 +193,7 @@ export const Categorias = () => {
         <Tooltip title="Agregar Subcategoría">
           <IconButton
             onClick={() => {
-              setCreatingRowIndex((staticRowIndex || 0) + 1);
+              //setCreatingRowIndex((staticRowIndex || 0) + 1);
               table.setCreatingRow(
                 createRow(
                   table,
