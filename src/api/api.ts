@@ -14,6 +14,19 @@ export const fetchCategorias = async () => {
   return response.data;
 };
 
+export const createCategoria = async (categoria: Categoria) => {
+  const response = await apiClient.post<Categoria>("/categoria", categoria);
+  return response;
+};
+
+export const actualizarCategoria = async (categoria: Categoria) => {
+  const response = await apiClient.put<Categoria>(
+    `/categoria/${categoria.id}`,
+    categoria,
+  );
+  return response;
+};
+
 export const fetchSubcategorias = async (categoriaId: string) => {
   const response = await apiClient.get<Subcategoria[]>(
     `/categorias/${categoriaId}/subcategorias`,

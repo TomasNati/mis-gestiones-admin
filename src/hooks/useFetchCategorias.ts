@@ -4,7 +4,7 @@ import { type Categoria } from "model/types";
 
 export const useFetchCategorias = () => {
   const { isPending, error, data, isLoading, isError } = useQuery<Categoria[]>({
-    queryKey: ["repoData"],
+    queryKey: ["categorias"],
     queryFn: async () => {
       const categorias = await fetchCategorias();
       return categorias;

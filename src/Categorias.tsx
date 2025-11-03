@@ -18,6 +18,8 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { validateCategoria } from "model/helpers";
+import { useCreateCategoria } from "./hooks/useCreateCategoria";
+import { useEditarCategoria } from "./hooks/useEditarCategoria";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -86,6 +88,10 @@ export const Categorias = () => {
   );
 
   const { isError, isLoading, data } = useFetchCategorias();
+  const { mutateAsync: createCategoria, isPending: isCreatingCategoria } =
+    useCreateCategoria();
+  const { mutateAsync: actualizarCategoria, isPending: isUpdatingCategoria } =
+    useEditarCategoria();
 
   const handleCreateCategoria: MRT_TableOptions<Categoria>["onCreatingRowSave"] =
     async ({ values, table }) => {
@@ -95,11 +101,12 @@ export const Categorias = () => {
         return;
       }
       setValidationErrors({});
-      const categoria: Partial<Categoria> = {
+      const categoria: Categoria = {
         nombre: values.nombre,
+        id: "00000000-0000-0000-0000-000000000000",
+        comentarios: undefined,
       };
-      console.log("Create values:", categoria);
-      //await createCategoria(categoria);
+      await createCategoria(categoria);
       table.setCreatingRow(null); //exit creating mode
     };
 
@@ -116,8 +123,7 @@ export const Categorias = () => {
         ...row.original,
         nombre: values.nombre,
       };
-      console.log("Edit values:", categoriaUpdated);
-      //await updateCategoria(categoriaUpdated);
+      await actualizarCategoria(categoriaUpdated);
       table.setEditingRow(null); //exit editing mode
     };
 
@@ -144,6 +150,7 @@ export const Categorias = () => {
     },
     state: {
       isLoading,
+      isSaving: isCreatingCategoria || isUpdatingCategoria, // || isDeletingUser
       showAlertBanner: isError,
     },
     muiToolbarAlertBannerProps: isError
