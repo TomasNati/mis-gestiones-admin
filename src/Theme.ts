@@ -57,10 +57,18 @@ export const customTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         ...(themeOptions.components?.MuiButton?.styleOverrides || {}),
-        outlined: {
+        outlinedPrimary: {
+          "&:hover": {
+            borderColor: "#4fc3f7",
+          },
+        },
+        outlinedSecondary: {
           "&:hover": {
             borderColor: "#4db6ac",
           },
+        },
+        containedError: {
+          color: "#fff",
         },
       },
     },
