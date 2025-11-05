@@ -27,6 +27,11 @@ export const actualizarCategoria = async (categoria: Categoria) => {
   return response;
 };
 
+export const eliminarCategoria = async (categoriaId: string) => {
+  const response = await apiClient.delete(`/categoria/${categoriaId}`);
+  return response.status == 204;
+};
+
 export const fetchSubcategorias = async (categoriaId: string) => {
   const response = await apiClient.get<Subcategoria[]>(
     `/categorias/${categoriaId}/subcategorias`,

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCategoria } from "api/api";
 import type { Categoria } from "model/types";
+import { QUERY_CATEGORIAS_FETCH } from "../constants";
 
 export const useCreateCategoria = () => {
   const queryClient = useQueryClient();
@@ -11,7 +12,7 @@ export const useCreateCategoria = () => {
     },
     onMutate: (newCategoria: Categoria) => {
       queryClient.setQueriesData(
-        { queryKey: ["categorias"] },
+        { queryKey: [QUERY_CATEGORIAS_FETCH] },
         (prevCategorias: Categoria[]) =>
           [
             ...prevCategorias,
@@ -24,7 +25,7 @@ export const useCreateCategoria = () => {
     },
     onSettled: () =>
       queryClient.invalidateQueries({
-        queryKey: ["categorias"],
+        queryKey: [QUERY_CATEGORIAS_FETCH],
       }),
   });
 };

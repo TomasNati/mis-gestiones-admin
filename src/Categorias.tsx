@@ -20,6 +20,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { validateCategoria } from "model/helpers";
 import { useCreateCategoria } from "./hooks/useCreateCategoria";
 import { useEditarCategoria } from "./hooks/useEditarCategoria";
+import { useDeleteCategoria } from "./hooks/useDeleteCategoria";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -55,9 +57,10 @@ export const Categorias = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
-  // const [creatingRowIndex, setCreatingRowIndex] = useState<
-  //   number | undefined
-  // >();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [categoriaIdToDelete, setCategoriaIdToDelete] = useState<string | null>(
+    null,
+  );
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -92,6 +95,8 @@ export const Categorias = () => {
     useCreateCategoria();
   const { mutateAsync: actualizarCategoria, isPending: isUpdatingCategoria } =
     useEditarCategoria();
+  const { mutateAsync: eliminarCategoria, isPending: isDeletingCategoria } =
+    useDeleteCategoria();
 
   const handleCreateCategoria: MRT_TableOptions<Categoria>["onCreatingRowSave"] =
     async ({ values, table }) => {
@@ -110,7 +115,6 @@ export const Categorias = () => {
       table.setCreatingRow(null); //exit creating mode
     };
 
-  //UPDATE action
   const handleSaveCategoria: MRT_TableOptions<Categoria>["onEditingRowSave"] =
     async ({ values, table, row }) => {
       const newValidationErrors = validateCategoria(values);
@@ -128,10 +132,21 @@ export const Categorias = () => {
     };
 
   const openDeleteConfirmModal = (row: MRT_Row<Categoria>) => {
-    if (window.confirm("Are you sure you want to delete this Categoria?")) {
-      console.log("Delete:", row.original.id);
-      //deleteUser(row.original.id);
+    setCategoriaIdToDelete(row.original.id);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteConfirmModal = () => {
+    setCategoriaIdToDelete(null);
+    setDeleteDialogOpen(false);
+  };
+
+  const onDeleteCategoria = async () => {
+    if (!categoriaIdToDelete) {
+      return;
     }
+    await eliminarCategoria(categoriaIdToDelete);
+    closeDeleteConfirmModal();
   };
 
   const table = useMaterialReactTable({
@@ -150,7 +165,8 @@ export const Categorias = () => {
     },
     state: {
       isLoading,
-      isSaving: isCreatingCategoria || isUpdatingCategoria, // || isDeletingUser
+      isSaving:
+        isCreatingCategoria || isUpdatingCategoria || isDeletingCategoria,
       showAlertBanner: isError,
     },
     muiToolbarAlertBannerProps: isError
@@ -230,5 +246,16 @@ export const Categorias = () => {
     onEditingRowSave: handleSaveCategoria,
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <>
+      {deleteDialogOpen ? (
+        <DeleteConfirmationDialog
+          onClose={closeDeleteConfirmModal}
+          open={deleteDialogOpen}
+          onConfirm={onDeleteCategoria}
+        />
+      ) : null}
+      <MaterialReactTable table={table} />
+    </>
+  );
 };
