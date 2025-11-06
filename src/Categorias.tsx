@@ -21,7 +21,7 @@ import { validateCategoria } from "model/helpers";
 import { useCreateCategoria } from "./hooks/useCreateCategoria";
 import { useEditarCategoria } from "./hooks/useEditarCategoria";
 import { useDeleteCategoria } from "./hooks/useDeleteCategoria";
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
