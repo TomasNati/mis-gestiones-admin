@@ -8,21 +8,18 @@ import {
   MRT_ToggleDensePaddingButton,
   MRT_ToggleFullScreenButton,
   MRT_ToggleFiltersButton,
-  type MRT_TableOptions,
   type MRT_Row,
-  createRow,
 } from "material-react-table";
 import { useFetchCategorias } from "./hooks/useFetchCategorias";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { validateCategoria } from "model/helpers";
 import { useCreateCategoria } from "./hooks/useCreateCategoria";
 import { useEditarCategoria } from "./hooks/useEditarCategoria";
 import { useDeleteCategoria } from "./hooks/useDeleteCategoria";
 import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
-import type { CategoriaBase } from "model/models";
+import type { CategoriaBase, CategoriaEdit } from "model/models";
 import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
 
 interface SubcategoriaProps {
@@ -56,9 +53,6 @@ const Subcategorias = ({ subcategorias }: SubcategoriaProps) => {
 };
 
 export const Categorias = () => {
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string | undefined>
-  >({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const [createEditCategoriaOpenDialog, setCreateEditCategoriaOpenDialog] =
     useState<boolean>(false);
@@ -75,16 +69,6 @@ export const Categorias = () => {
         accessorKey: "nombre",
         header: "Nombre",
         size: 100,
-        muiEditTextFieldProps: {
-          required: true,
-          error: !!validationErrors?.nombre,
-          helperText: validationErrors?.nombre,
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              nombre: undefined,
-            }),
-        },
       },
       {
         accessorFn: (categoria: Categoria) => categoria.subcategorias?.length,
@@ -94,7 +78,7 @@ export const Categorias = () => {
         size: 240,
       },
     ],
-    [validationErrors],
+    [],
   );
 
   const { isError, isLoading, data } = useFetchCategorias();
@@ -104,39 +88,6 @@ export const Categorias = () => {
     useEditarCategoria();
   const { mutateAsync: eliminarCategoria, isPending: isDeletingCategoria } =
     useDeleteCategoria();
-
-  const handleCreateCategoria: MRT_TableOptions<Categoria>["onCreatingRowSave"] =
-    async ({ values, table }) => {
-      const newValidationErrors = validateCategoria(values);
-      if (Object.values(newValidationErrors).some((error) => error)) {
-        setValidationErrors(newValidationErrors);
-        return;
-      }
-      setValidationErrors({});
-      const categoria: Categoria = {
-        nombre: values.nombre,
-        id: "00000000-0000-0000-0000-000000000000",
-        comentarios: undefined,
-      };
-      await createCategoria(categoria);
-      table.setCreatingRow(null); //exit creating mode
-    };
-
-  const handleSaveCategoria: MRT_TableOptions<Categoria>["onEditingRowSave"] =
-    async ({ values, table, row }) => {
-      const newValidationErrors = validateCategoria(values);
-      if (Object.values(newValidationErrors).some((error) => error)) {
-        setValidationErrors(newValidationErrors);
-        return;
-      }
-      setValidationErrors({});
-      const categoriaUpdated: Categoria = {
-        ...row.original,
-        nombre: values.nombre,
-      };
-      await actualizarCategoria(categoriaUpdated);
-      table.setEditingRow(null); //exit editing mode
-    };
 
   const openDeleteConfirmModal = (row: MRT_Row<Categoria>) => {
     setCategoriaIdToDelete(row.original.id);
@@ -158,8 +109,12 @@ export const Categorias = () => {
     setCreateEditCategoriaOpenDialog(false);
   };
 
-  const handleCreateEditCategoria = (categoria: CategoriaBase) => {
-    console.log(categoria);
+  const handleCreateEditCategoria = async (
+    categoria: CategoriaBase | CategoriaEdit,
+  ) => {
+    categoriaAEditar
+      ? await actualizarCategoria(categoria as CategoriaEdit)
+      : await createCategoria(categoria as CategoriaBase);
     closeCreateEditCategoriaDialog();
   };
 
@@ -214,8 +169,7 @@ export const Categorias = () => {
         <MRT_ToggleFullScreenButton table={table} />
       </>
     ),
-    //, staticRowIndex
-    renderRowActions: ({ row, table }) => (
+    renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">
           <IconButton
@@ -230,36 +184,14 @@ export const Categorias = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Agregar Subcategoría">
-          <IconButton
-            onClick={() => {
-              //setCreatingRowIndex((staticRowIndex || 0) + 1);
-              table.setCreatingRow(
-                createRow(
-                  table,
-                  {
-                    id: null!,
-                    nombre: "",
-                    subcategorias: [],
-                  },
-                  -1,
-                  row.depth + 1,
-                ),
-              );
-            }}
-          >
+          <IconButton onClick={() => {}}>
             <AddCircleOutlineIcon />
           </IconButton>
         </Tooltip>
       </Box>
     ),
-    // createDisplayMode: "modal",
-    // editDisplayMode: "modal",
     enableEditing: true,
     getRowId: (row) => row.id,
-    // onCreatingRowCancel: () => setValidationErrors({}),
-    // onCreatingRowSave: handleCreateCategoria,
-    // onEditingRowCancel: () => setValidationErrors({}),
-    // onEditingRowSave: handleSaveCategoria,
   });
 
   return (

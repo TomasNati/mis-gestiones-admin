@@ -1,17 +1,18 @@
 import { z } from "zod";
 
 export const categoriaBaseSchema = z.object({
-  nombre: z.string().min(1, "Nombre es requerido"),
-  comentarios: z.string().optional(),
+  nombre: z.string().trim().min(1, "Nombre es requerido"),
+  comentarios: z.string().optional().nullable(),
 });
 
 export const categoriaEditSchema = categoriaBaseSchema.extend({
   id: z.uuid({ error: "ID es requerido" }),
+  active: z.boolean(),
 });
 
 export const subcategoriaBaseSchema = z.object({
-  nombre: z.string().min(1, "Nombre es requerido"),
-  comentarios: z.string().optional(),
+  nombre: z.string().trim().min(1, "Nombre es requerido"),
+  comentarios: z.string().optional().nullable(),
   categoria: categoriaBaseSchema.refine(() => true, {
     error: "La categoria es inválida",
   }),
@@ -19,6 +20,7 @@ export const subcategoriaBaseSchema = z.object({
 
 export const subcategoriaEditSchema = subcategoriaBaseSchema.extend({
   id: z.uuid({ error: "ID es requerido" }),
+  active: z.boolean(),
 });
 
 export type CategoriaBase = z.infer<typeof categoriaBaseSchema>;

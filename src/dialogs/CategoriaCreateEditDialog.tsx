@@ -1,6 +1,11 @@
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type CategoriaBase, categoriaBaseSchema } from "model/models";
+import {
+  type CategoriaBase,
+  categoriaBaseSchema,
+  type CategoriaEdit,
+  categoriaEditSchema,
+} from "model/models";
 import {
   Button,
   Dialog,
@@ -13,9 +18,9 @@ import { useEffect } from "react";
 
 interface CategoriaCreateEditDialogProps {
   open: boolean;
-  initialCategory: Partial<CategoriaBase>;
+  initialCategory: Partial<CategoriaEdit>;
   onClose: () => void;
-  onSubmit: (categoria: CategoriaBase) => void;
+  onSubmit: (categoria: CategoriaBase | CategoriaEdit) => void;
 }
 
 export const CategoriaCreateEditDialog = ({
@@ -24,13 +29,15 @@ export const CategoriaCreateEditDialog = ({
   onClose,
   onSubmit,
 }: CategoriaCreateEditDialogProps) => {
+  const schema = initialCategory.id ? categoriaEditSchema : categoriaBaseSchema;
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CategoriaBase>({
-    resolver: zodResolver(categoriaBaseSchema),
+  } = useForm<CategoriaBase | CategoriaEdit>({
+    resolver: zodResolver(schema),
     defaultValues: initialCategory,
   });
 
@@ -38,7 +45,7 @@ export const CategoriaCreateEditDialog = ({
     reset(initialCategory);
   }, [initialCategory, reset]);
 
-  console.log(errors);
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -66,7 +73,7 @@ export const CategoriaCreateEditDialog = ({
           <Button onClick={onClose} color="primary" variant="outlined">
             Cancelar
           </Button>
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" disabled={hasErrors}>
             {initialCategory ? "Guardar" : "Crear"}
           </Button>
         </DialogActions>

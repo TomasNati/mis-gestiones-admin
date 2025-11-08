@@ -1,5 +1,7 @@
 import axios from "axios";
 import { type Categoria, type Subcategoria } from "model/types";
+import { type CategoriaBase, type CategoriaEdit } from "model/models";
+
 const backendAPI = import.meta.env.VITE_BACKEND_API;
 
 const apiClient = axios.create({
@@ -14,13 +16,13 @@ export const fetchCategorias = async () => {
   return response.data;
 };
 
-export const createCategoria = async (categoria: Categoria) => {
-  const response = await apiClient.post<Categoria>("/categoria", categoria);
+export const createCategoria = async (categoria: CategoriaBase) => {
+  const response = await apiClient.post<CategoriaBase>("/categoria", categoria);
   return response;
 };
 
-export const actualizarCategoria = async (categoria: Categoria) => {
-  const response = await apiClient.put<Categoria>(
+export const actualizarCategoria = async (categoria: CategoriaEdit) => {
+  const response = await apiClient.put<CategoriaEdit>(
     `/categoria/${categoria.id}`,
     categoria,
   );
