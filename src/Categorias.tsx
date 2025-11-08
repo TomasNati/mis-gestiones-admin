@@ -22,6 +22,8 @@ import { useCreateCategoria } from "./hooks/useCreateCategoria";
 import { useEditarCategoria } from "./hooks/useEditarCategoria";
 import { useDeleteCategoria } from "./hooks/useDeleteCategoria";
 import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
+import type { CategoriaBase } from "model/models";
+import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -58,6 +60,11 @@ export const Categorias = () => {
     Record<string, string | undefined>
   >({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [createEditCategoriaOpenDialog, setCreateEditCategoriaOpenDialog] =
+    useState<boolean>(false);
+  const [categoriaAEditar, setCategoriaAEditar] = useState<
+    Categoria | undefined
+  >(undefined);
   const [categoriaIdToDelete, setCategoriaIdToDelete] = useState<string | null>(
     null,
   );
@@ -141,6 +148,21 @@ export const Categorias = () => {
     setDeleteDialogOpen(false);
   };
 
+  const openCreateEditCategoriaDialog = (categoria?: Categoria) => {
+    setCategoriaAEditar(categoria);
+    setCreateEditCategoriaOpenDialog(true);
+  };
+
+  const closeCreateEditCategoriaDialog = () => {
+    setCategoriaAEditar(undefined);
+    setCreateEditCategoriaOpenDialog(false);
+  };
+
+  const handleCreateEditCategoria = (categoria: CategoriaBase) => {
+    console.log(categoria);
+    closeCreateEditCategoriaDialog();
+  };
+
   const onDeleteCategoria = async () => {
     if (!categoriaIdToDelete) {
       return;
@@ -175,20 +197,12 @@ export const Categorias = () => {
           children: "Error loading data",
         }
       : undefined,
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: () => (
       <Button
         startIcon={<AddCircleOutlineIcon />}
         variant="outlined"
         color="secondary"
-        onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
-        }}
+        onClick={() => openCreateEditCategoriaDialog()}
       >
         Crear Categoria
       </Button>
@@ -204,7 +218,9 @@ export const Categorias = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
+          <IconButton
+            onClick={() => openCreateEditCategoriaDialog(row.original)}
+          >
             <EditIcon />
           </IconButton>
         </Tooltip>
@@ -236,14 +252,14 @@ export const Categorias = () => {
         </Tooltip>
       </Box>
     ),
-    createDisplayMode: "modal",
-    editDisplayMode: "modal",
+    // createDisplayMode: "modal",
+    // editDisplayMode: "modal",
     enableEditing: true,
     getRowId: (row) => row.id,
-    onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateCategoria,
-    onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: handleSaveCategoria,
+    // onCreatingRowCancel: () => setValidationErrors({}),
+    // onCreatingRowSave: handleCreateCategoria,
+    // onEditingRowCancel: () => setValidationErrors({}),
+    // onEditingRowSave: handleSaveCategoria,
   });
 
   return (
@@ -255,6 +271,13 @@ export const Categorias = () => {
           onConfirm={onDeleteCategoria}
         />
       ) : null}
+      <CategoriaCreateEditDialog
+        open={createEditCategoriaOpenDialog}
+        onClose={closeCreateEditCategoriaDialog}
+        onSubmit={handleCreateEditCategoria}
+        initialCategory={categoriaAEditar || {}}
+      />
+
       <MaterialReactTable table={table} />
     </>
   );

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const categoriaBaseSchema = z.object({
   nombre: z.string().min(1, "Nombre es requerido"),
   comentarios: z.string().optional(),
-  active: z.boolean(),
 });
 
 export const categoriaEditSchema = categoriaBaseSchema.extend({
@@ -13,7 +12,6 @@ export const categoriaEditSchema = categoriaBaseSchema.extend({
 export const subcategoriaBaseSchema = z.object({
   nombre: z.string().min(1, "Nombre es requerido"),
   comentarios: z.string().optional(),
-  active: z.boolean(),
   categoria: categoriaBaseSchema.refine(() => true, {
     error: "La categoria es inválida",
   }),
