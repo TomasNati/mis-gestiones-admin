@@ -112,9 +112,11 @@ export const Categorias = () => {
   const handleCreateEditCategoria = async (
     categoria: CategoriaBase | CategoriaEdit,
   ) => {
-    categoriaAEditar
-      ? await actualizarCategoria(categoria as CategoriaEdit)
-      : await createCategoria(categoria as CategoriaBase);
+    if (categoriaAEditar) {
+      await actualizarCategoria(categoria as CategoriaEdit);
+    } else {
+      await createCategoria(categoria as CategoriaBase);
+    }
     closeCreateEditCategoriaDialog();
   };
 

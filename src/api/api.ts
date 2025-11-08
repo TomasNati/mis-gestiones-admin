@@ -12,7 +12,7 @@ const apiClient = axios.create({
 });
 
 export const fetchCategorias = async () => {
-  const response = await apiClient.get<Categoria[]>("/categorias");
+  const response = await apiClient.get<Categoria[]>("/categorias?active=true");
   return response.data;
 };
 
