@@ -42,6 +42,10 @@ const Subcategorias = ({ subcategorias }: SubcategoriaProps) => {
         accessorKey: "nombre",
         header: "Subcategoria",
       },
+      {
+        accessorKey: "comentarios",
+        header: "Comentarios",
+      },
     ],
     [],
   );
