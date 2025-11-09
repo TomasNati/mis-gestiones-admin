@@ -53,7 +53,9 @@ export const SubcategoriaCreateEditDialog = ({
   }, [initialSubcategory, reset]);
 
   const hasErrors = Object.keys(errors).length > 0;
-  if (hasErrors) console.log(errors);
+  const categoriasSorted = categorias.sort((a, b) =>
+    a.nombre.localeCompare(b.nombre),
+  );
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -61,7 +63,7 @@ export const SubcategoriaCreateEditDialog = ({
         {initialSubcategory.nombre ? "Editar" : "Crear"} Subcategoria
       </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent>
+        <DialogContent sx={{ width: 400 }}>
           <TextField
             label="Nombre"
             fullWidth
@@ -76,7 +78,7 @@ export const SubcategoriaCreateEditDialog = ({
             render={({ field }) => (
               <Autocomplete
                 {...field}
-                options={categorias}
+                options={categoriasSorted}
                 onChange={(_, value) => field.onChange(value)}
                 value={field.value ?? null}
                 getOptionLabel={(cat) => cat.nombre}
@@ -86,7 +88,7 @@ export const SubcategoriaCreateEditDialog = ({
                     label="Categoria"
                     variant="outlined"
                     error={!!errors.categoria}
-                    helperText="Categoría es requerida"
+                    helperText={errors.categoria?.message}
                   />
                 )}
               />
