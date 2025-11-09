@@ -1,7 +1,8 @@
 export interface BasicEntity {
   id: string;
   nombre: string;
-  comentarios?: string;
+  comentarios?: string | null;
+  active: boolean;
 }
 
 export interface Categoria extends BasicEntity {

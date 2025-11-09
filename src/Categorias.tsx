@@ -10,17 +10,26 @@ import {
   MRT_ToggleFiltersButton,
   type MRT_Row,
 } from "material-react-table";
-import { useFetchCategorias } from "./hooks/useFetchCategorias";
+import {
+  useFetchCategorias,
+  useCreateCategoria,
+  useDeleteCategoria,
+  useEditarCategoria,
+  useCreateSubcategoria,
+} from "./hooks/useCategoriasHooks";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useCreateCategoria } from "./hooks/useCreateCategoria";
-import { useEditarCategoria } from "./hooks/useEditarCategoria";
-import { useDeleteCategoria } from "./hooks/useDeleteCategoria";
 import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
-import type { CategoriaBase, CategoriaEdit } from "model/models";
+import type {
+  CategoriaBase,
+  CategoriaEdit,
+  SubcategoriaBase,
+  SubcategoriaEdit,
+} from "model/models";
 import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
+import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -59,9 +68,16 @@ export const Categorias = () => {
   const [categoriaAEditar, setCategoriaAEditar] = useState<
     Categoria | undefined
   >(undefined);
+  const [subcategoriaAEditar, setSubcategoriaAEditar] = useState<
+    Subcategoria | undefined
+  >(undefined);
   const [categoriaIdToDelete, setCategoriaIdToDelete] = useState<string | null>(
     null,
   );
+  const [
+    createEditSubcategoriaOpenDialog,
+    setCreateEditSubcategoriaOpenDialog,
+  ] = useState<boolean>(false);
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -88,6 +104,8 @@ export const Categorias = () => {
     useEditarCategoria();
   const { mutateAsync: eliminarCategoria, isPending: isDeletingCategoria } =
     useDeleteCategoria();
+  const { mutateAsync: crearSubcategoria, isPending: isCreatingSubcategoria } =
+    useCreateSubcategoria();
 
   const openDeleteConfirmModal = (row: MRT_Row<Categoria>) => {
     setCategoriaIdToDelete(row.original.id);
@@ -109,6 +127,16 @@ export const Categorias = () => {
     setCreateEditCategoriaOpenDialog(false);
   };
 
+  const openCreateEdiSubcategoriaDialog = (subcategoria?: Subcategoria) => {
+    setSubcategoriaAEditar(subcategoria);
+    setCreateEditSubcategoriaOpenDialog(true);
+  };
+
+  const closeCreateEditSubcategoriaDialog = () => {
+    setSubcategoriaAEditar(undefined);
+    setCreateEditSubcategoriaOpenDialog(false);
+  };
+
   const handleCreateEditCategoria = async (
     categoria: CategoriaBase | CategoriaEdit,
   ) => {
@@ -118,6 +146,17 @@ export const Categorias = () => {
       await createCategoria(categoria as CategoriaBase);
     }
     closeCreateEditCategoriaDialog();
+  };
+
+  const handleCreateEditSubcategoria = async (
+    subcategoria: SubcategoriaBase | SubcategoriaEdit,
+  ) => {
+    if (subcategoriaAEditar) {
+      //await actualizarSubcategoria(subcategoria as SubcategoriaEdit);
+    } else {
+      await crearSubcategoria(subcategoria as SubcategoriaBase);
+    }
+    closeCreateEditSubcategoriaDialog();
   };
 
   const onDeleteCategoria = async () => {
@@ -145,7 +184,10 @@ export const Categorias = () => {
     state: {
       isLoading,
       isSaving:
-        isCreatingCategoria || isUpdatingCategoria || isDeletingCategoria,
+        isCreatingCategoria ||
+        isUpdatingCategoria ||
+        isDeletingCategoria ||
+        isCreatingSubcategoria,
       showAlertBanner: isError,
     },
     muiToolbarAlertBannerProps: isError
@@ -186,7 +228,7 @@ export const Categorias = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Agregar Subcategoría">
-          <IconButton onClick={() => {}}>
+          <IconButton onClick={() => openCreateEdiSubcategoriaDialog()}>
             <AddCircleOutlineIcon />
           </IconButton>
         </Tooltip>
@@ -198,20 +240,24 @@ export const Categorias = () => {
 
   return (
     <>
-      {deleteDialogOpen ? (
-        <DeleteConfirmationDialog
-          onClose={closeDeleteConfirmModal}
-          open={deleteDialogOpen}
-          onConfirm={onDeleteCategoria}
-        />
-      ) : null}
+      <DeleteConfirmationDialog
+        onClose={closeDeleteConfirmModal}
+        open={deleteDialogOpen}
+        onConfirm={onDeleteCategoria}
+      />
       <CategoriaCreateEditDialog
         open={createEditCategoriaOpenDialog}
         onClose={closeCreateEditCategoriaDialog}
         onSubmit={handleCreateEditCategoria}
         initialCategory={categoriaAEditar || {}}
       />
-
+      <SubcategoriaCreateEditDialog
+        open={createEditSubcategoriaOpenDialog}
+        onClose={closeCreateEditSubcategoriaDialog}
+        onSubmit={handleCreateEditSubcategoria}
+        initialSubcategory={subcategoriaAEditar || {}}
+        categorias={data}
+      />
       <MaterialReactTable table={table} />
     </>
   );

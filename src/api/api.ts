@@ -1,6 +1,11 @@
 import axios from "axios";
 import { type Categoria, type Subcategoria } from "model/types";
-import { type CategoriaBase, type CategoriaEdit } from "model/models";
+import {
+  type CategoriaBase,
+  type CategoriaEdit,
+  type SubcategoriaBase,
+  type SubcategoriaEdit,
+} from "model/models";
 
 const backendAPI = import.meta.env.VITE_BACKEND_API;
 
@@ -39,4 +44,31 @@ export const fetchSubcategorias = async (categoriaId: string) => {
     `/categorias/${categoriaId}/subcategorias`,
   );
   return response.data;
+};
+
+export const createSubcategoria = async (subcategoria: SubcategoriaBase) => {
+  const payload = {
+    ...subcategoria,
+    categoriaId: subcategoria.categoria.id,
+  };
+  const response = await apiClient.post<SubcategoriaBase>(
+    "/subcategoria",
+    payload,
+  );
+  return response;
+};
+
+export const actualizarSubcategoria = async (
+  subcategoria: SubcategoriaEdit,
+) => {
+  const response = await apiClient.put<SubcategoriaEdit>(
+    `/subcategoria/${subcategoria.id}`,
+    subcategoria,
+  );
+  return response;
+};
+
+export const eliminarSubcategoria = async (subcategoriaId: string) => {
+  const response = await apiClient.delete(`/subcategoria/${subcategoriaId}`);
+  return response.status == 204;
 };
