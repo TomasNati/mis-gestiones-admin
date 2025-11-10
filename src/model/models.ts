@@ -13,9 +13,7 @@ export const categoriaEditSchema = categoriaBaseSchema.extend({
 export const subcategoriaBaseSchema = z.object({
   nombre: z.string().trim().min(1, "Nombre es requerido"),
   comentarios: z.string().optional().nullable(),
-  categoria: categoriaEditSchema.refine((val) => !!val, {
-    message: "Categoría es requerida",
-  }),
+  categoria: categoriaEditSchema,
 });
 
 export const subcategoriaEditSchema = subcategoriaBaseSchema.extend({
