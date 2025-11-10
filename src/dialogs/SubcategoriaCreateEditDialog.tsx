@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { useEffect } from "react";
 import type { Categoria } from "model/types";
+import { formatErrors } from "model/utils";
 
 interface SubcategoriaCreateEditDialogProps {
   open: boolean;
@@ -37,13 +38,9 @@ export const SubcategoriaCreateEditDialog = ({
     ? subcategoriaEditSchema
     : subcategoriaBaseSchema;
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = useForm<SubcategoriaBase | SubcategoriaEdit>({
+  const { register, handleSubmit, control, formState, reset } = useForm<
+    SubcategoriaBase | SubcategoriaEdit
+  >({
     resolver: zodResolver(schema),
     defaultValues: initialSubcategory,
   });
@@ -52,6 +49,7 @@ export const SubcategoriaCreateEditDialog = ({
     reset(initialSubcategory);
   }, [initialSubcategory, reset]);
 
+  const errors = formatErrors(formState.errors);
   const hasErrors = Object.keys(errors).length > 0;
   const categoriasSorted = categorias.sort((a, b) =>
     a.nombre.localeCompare(b.nombre),
