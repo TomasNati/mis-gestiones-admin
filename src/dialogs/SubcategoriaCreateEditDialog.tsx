@@ -77,6 +77,7 @@ export const SubcategoriaCreateEditDialog = ({
               <Autocomplete
                 {...field}
                 options={categoriasSorted}
+                disabled
                 onChange={(_, value) => field.onChange(value)}
                 value={field.value ?? null}
                 getOptionLabel={(cat) => cat.nombre}

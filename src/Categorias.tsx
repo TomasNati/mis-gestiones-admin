@@ -73,7 +73,7 @@ export const Categorias = () => {
     Categoria | undefined
   >(undefined);
   const [subcategoriaAEditar, setSubcategoriaAEditar] = useState<
-    Subcategoria | undefined
+    Partial<Subcategoria> | undefined
   >(undefined);
   const [categoriaIdToDelete, setCategoriaIdToDelete] = useState<string | null>(
     null,
@@ -131,8 +131,12 @@ export const Categorias = () => {
     setCreateEditCategoriaOpenDialog(false);
   };
 
-  const openCreateEdiSubcategoriaDialog = (subcategoria?: Subcategoria) => {
-    setSubcategoriaAEditar(subcategoria);
+  const openCreateEdiSubcategoriaDialog = (
+    categoria: Categoria,
+    subcategoria?: Subcategoria,
+  ) => {
+    const defaultValues: Partial<Subcategoria> = subcategoria ?? { categoria };
+    setSubcategoriaAEditar(defaultValues);
     setCreateEditSubcategoriaOpenDialog(true);
   };
 
@@ -155,7 +159,7 @@ export const Categorias = () => {
   const handleCreateEditSubcategoria = async (
     subcategoria: SubcategoriaBase | SubcategoriaEdit,
   ) => {
-    if (subcategoriaAEditar) {
+    if (subcategoriaAEditar?.id) {
       //await actualizarSubcategoria(subcategoria as SubcategoriaEdit);
     } else {
       await crearSubcategoria(subcategoria as SubcategoriaBase);
@@ -232,7 +236,9 @@ export const Categorias = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Agregar Subcategoría">
-          <IconButton onClick={() => openCreateEdiSubcategoriaDialog()}>
+          <IconButton
+            onClick={() => openCreateEdiSubcategoriaDialog(row.original)}
+          >
             <AddCircleOutlineIcon />
           </IconButton>
         </Tooltip>
