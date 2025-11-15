@@ -2,7 +2,6 @@ import type { Categoria, Subcategoria } from "model/types";
 import { useMemo, useState } from "react";
 import {
   MaterialReactTable,
-  MRT_Table,
   useMaterialReactTable,
   type MRT_ColumnDef,
   MRT_ToggleDensePaddingButton,
@@ -16,6 +15,7 @@ import {
   useDeleteCategoria,
   useEditarCategoria,
   useCreateSubcategoria,
+  useDeleteSubcategoria,
 } from "./hooks/useCategoriasHooks";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -30,40 +30,7 @@ import type {
 } from "model/models";
 import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
 import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
-
-interface SubcategoriaProps {
-  subcategorias: Subcategoria[];
-}
-
-const Subcategorias = ({ subcategorias }: SubcategoriaProps) => {
-  const columnsSubcategorias = useMemo<MRT_ColumnDef<Subcategoria>[]>(
-    () => [
-      {
-        accessorKey: "nombre",
-        header: "Subcategoria",
-      },
-      {
-        accessorKey: "comentarios",
-        header: "Comentarios",
-      },
-    ],
-    [],
-  );
-
-  const tableSubcategorias = useMaterialReactTable({
-    columns: columnsSubcategorias,
-    data: subcategorias || [],
-    enableColumnActions: false,
-    enableColumnFilters: false,
-    enablePagination: false,
-    initialState: {
-      sorting: [{ id: "nombre", desc: false }],
-      density: "compact",
-    },
-  });
-
-  return <MRT_Table table={tableSubcategorias} />;
-};
+import { Subcategorias } from "./Subcategoria";
 
 export const Categorias = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -75,7 +42,7 @@ export const Categorias = () => {
   const [subcategoriaAEditar, setSubcategoriaAEditar] = useState<
     Partial<Subcategoria> | undefined
   >(undefined);
-  const [categoriaIdToDelete, setCategoriaIdToDelete] = useState<string | null>(
+  const [categoriaToDelete, setCategoriaToDelete] = useState<Categoria | null>(
     null,
   );
   const [
@@ -110,14 +77,18 @@ export const Categorias = () => {
     useDeleteCategoria();
   const { mutateAsync: crearSubcategoria, isPending: isCreatingSubcategoria } =
     useCreateSubcategoria();
+  const {
+    mutateAsync: eliminarSubcategoria,
+    isPending: isDeletingSubcategoria,
+  } = useDeleteSubcategoria();
 
   const openDeleteConfirmModal = (row: MRT_Row<Categoria>) => {
-    setCategoriaIdToDelete(row.original.id);
+    setCategoriaToDelete(row.original);
     setDeleteDialogOpen(true);
   };
 
   const closeDeleteConfirmModal = () => {
-    setCategoriaIdToDelete(null);
+    setCategoriaToDelete(null);
     setDeleteDialogOpen(false);
   };
 
@@ -168,10 +139,10 @@ export const Categorias = () => {
   };
 
   const onDeleteCategoria = async () => {
-    if (!categoriaIdToDelete) {
+    if (!categoriaToDelete) {
       return;
     }
-    await eliminarCategoria(categoriaIdToDelete);
+    await eliminarCategoria(categoriaToDelete.id);
     closeDeleteConfirmModal();
   };
 
@@ -180,7 +151,11 @@ export const Categorias = () => {
     data,
     rowCount: data.length,
     renderDetailPanel: ({ row }) => (
-      <Subcategorias subcategorias={row.original.subcategorias || []} />
+      <Subcategorias
+        onEliminarSubcategoria={eliminarSubcategoria}
+        subcategorias={row.original.subcategorias || []}
+        categoriaPadre={row.original}
+      />
     ),
     initialState: {
       sorting: [{ id: "nombre", desc: false }],
@@ -195,7 +170,8 @@ export const Categorias = () => {
         isCreatingCategoria ||
         isUpdatingCategoria ||
         isDeletingCategoria ||
-        isCreatingSubcategoria,
+        isCreatingSubcategoria ||
+        isDeletingSubcategoria,
       showAlertBanner: isError,
     },
     muiToolbarAlertBannerProps: isError
@@ -254,6 +230,7 @@ export const Categorias = () => {
         onClose={closeDeleteConfirmModal}
         open={deleteDialogOpen}
         onConfirm={onDeleteCategoria}
+        description={`Categoria "${categoriaToDelete?.nombre}"`}
       />
       <CategoriaCreateEditDialog
         open={createEditCategoriaOpenDialog}

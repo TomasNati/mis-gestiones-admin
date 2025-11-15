@@ -4,6 +4,7 @@ import {
   createCategoria,
   createSubcategoria,
   eliminarCategoria,
+  eliminarSubcategoria,
   fetchCategorias,
 } from "api/api";
 import type { Categoria, Subcategoria } from "model/types";
@@ -12,6 +13,7 @@ import {
   type CategoriaBase,
   type CategoriaEdit,
   type SubcategoriaBase,
+  type SubcategoriaEdit,
 } from "model/models";
 
 export const useCreateCategoria = () => {
@@ -41,6 +43,43 @@ export const useCreateCategoria = () => {
   });
 };
 
+const actualizarSubcategoriaDeCategoria = (
+  subcategoria: SubcategoriaEdit,
+  categorias: Categoria[],
+  action: "crear" | "editar" | "eliminar",
+) => {
+  const categoriaPadre = categorias.find(
+    ({ id }) => id === subcategoria.categoria.id,
+  );
+  if (!categoriaPadre) return categorias;
+
+  switch (action) {
+    case "crear": {
+      const newSubcategoria: Subcategoria = {
+        ...subcategoria,
+        categoria: categoriaPadre,
+      };
+
+      categoriaPadre.subcategorias = categoriaPadre.subcategorias
+        ? [...categoriaPadre.subcategorias, newSubcategoria]
+        : [newSubcategoria];
+      break;
+    }
+    case "eliminar": {
+      categoriaPadre.subcategorias = categoriaPadre.subcategorias?.filter(
+        ({ id }) => id !== subcategoria.id,
+      );
+      break;
+    }
+    default: {
+    }
+  }
+
+  return categorias.map((cat) =>
+    cat.id === categoriaPadre.id ? categoriaPadre : cat,
+  );
+};
+
 export const useCreateSubcategoria = () => {
   const queryClient = useQueryClient();
 
@@ -51,27 +90,41 @@ export const useCreateSubcategoria = () => {
     onMutate: (newSubcategoria: SubcategoriaBase) => {
       queryClient.setQueriesData(
         { queryKey: [QUERY_CATEGORIAS_FETCH] },
-        (prevCategorias: Categoria[]) => {
-          const categoriaPadre = prevCategorias.find(
-            ({ id }) => id === newSubcategoria.categoria.id,
-          );
-          if (!categoriaPadre) return prevCategorias;
+        (prevCategorias: Categoria[]) =>
+          actualizarSubcategoriaDeCategoria(
+            {
+              ...newSubcategoria,
+              id: (Math.random() + 1).toString(36).substring(7),
+              active: true,
+            },
+            prevCategorias,
+            "crear",
+          ),
+      );
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_CATEGORIAS_FETCH],
+      }),
+  });
+};
 
-          const subcategoria: Subcategoria = {
-            ...newSubcategoria,
-            categoria: categoriaPadre,
-            id: (Math.random() + 1).toString(36).substring(7),
-            active: true,
-          };
+export const useDeleteSubcategoria = () => {
+  const queryClient = useQueryClient();
 
-          categoriaPadre.subcategorias = categoriaPadre.subcategorias
-            ? [...categoriaPadre.subcategorias, subcategoria]
-            : [subcategoria];
-
-          return prevCategorias.map((cat) =>
-            cat.id === categoriaPadre.id ? categoriaPadre : cat,
-          );
-        },
+  return useMutation({
+    mutationFn: async (subcategoria: SubcategoriaEdit) => {
+      await eliminarSubcategoria(subcategoria.id);
+    },
+    onMutate: (subcategoria: SubcategoriaEdit) => {
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_CATEGORIAS_FETCH] },
+        (prevCategorias: Categoria[]) =>
+          actualizarSubcategoriaDeCategoria(
+            subcategoria,
+            prevCategorias,
+            "eliminar",
+          ),
       );
     },
     onSettled: () =>
