@@ -8,7 +8,6 @@ import {
   type CategoriaBase,
   type CategoriaEdit,
   type SubcategoriaBase,
-  type SubcategoriaEdit,
 } from "model/models";
 
 const backendAPI = import.meta.env.VITE_BACKEND_API;

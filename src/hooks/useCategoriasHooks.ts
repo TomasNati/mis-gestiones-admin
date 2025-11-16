@@ -78,8 +78,6 @@ const actualizarSubcategoriaDeCategoria = (
       );
       break;
     }
-    default: {
-    }
   }
 
   return categorias.map((cat) =>

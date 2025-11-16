@@ -27,7 +27,6 @@ import type {
   CategoriaBase,
   CategoriaEdit,
   SubcategoriaBase,
-  SubcategoriaEdit,
 } from "model/models";
 import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
 import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
