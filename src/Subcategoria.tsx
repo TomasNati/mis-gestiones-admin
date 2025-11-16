@@ -9,22 +9,30 @@ import { useMemo, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
-import type { SubcategoriaEdit } from "model/models";
+import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
+import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
   categoriaPadre: Categoria;
   onEliminarSubcategoria: (subcategoria: SubcategoriaEdit) => Promise<void>;
+  onActualizarSubcategoria: (subcategoria: SubcategoriaEdit) => Promise<void>;
 }
 
 export const Subcategorias = ({
   subcategorias,
   categoriaPadre,
   onEliminarSubcategoria,
+  onActualizarSubcategoria,
 }: SubcategoriaProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const [subcategoriaToDelete, setSubcategoriaToDelete] =
     useState<Subcategoria | null>(null);
+  const [editSubcategoriaOpenDialog, setEditSubcategoriaOpenDialog] =
+    useState<boolean>(false);
+  const [subcategoriaAEditar, setSubcategoriaAEditar] = useState<
+    Subcategoria | undefined
+  >(undefined);
 
   const columnsSubcategorias = useMemo<MRT_ColumnDef<Subcategoria>[]>(
     () => [
@@ -41,7 +49,23 @@ export const Subcategorias = ({
   );
 
   const openEditSubcategoriaDialog = (subcategoria: Subcategoria) => {
-    console.log(subcategoria);
+    setSubcategoriaAEditar({
+      ...subcategoria,
+      categoria: categoriaPadre,
+    });
+    setEditSubcategoriaOpenDialog(true);
+  };
+
+  const closeEditSubcategoriaDialog = () => {
+    setSubcategoriaAEditar(undefined);
+    setEditSubcategoriaOpenDialog(false);
+  };
+
+  const handleEditSubcategoria = async (
+    subcategoria: SubcategoriaBase | SubcategoriaEdit,
+  ) => {
+    await onActualizarSubcategoria(subcategoria as SubcategoriaEdit);
+    closeEditSubcategoriaDialog();
   };
 
   const openDeleteConfirmModal = (subcategoria: Subcategoria) => {
@@ -103,7 +127,13 @@ export const Subcategorias = ({
         onConfirm={onDeleteSubcategoria}
         description={`Subcategoria "${subcategoriaToDelete?.nombre}"`}
       />
-
+      <SubcategoriaCreateEditDialog
+        open={editSubcategoriaOpenDialog}
+        onClose={closeEditSubcategoriaDialog}
+        onSubmit={handleEditSubcategoria}
+        initialSubcategory={subcategoriaAEditar || {}}
+        categorias={[categoriaPadre]}
+      />
       <MRT_Table table={tableSubcategorias} />
     </>
   );

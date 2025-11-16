@@ -16,6 +16,7 @@ import {
   useEditarCategoria,
   useCreateSubcategoria,
   useDeleteSubcategoria,
+  useEditarSubcategoria,
 } from "./hooks/useCategoriasHooks";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -45,10 +46,8 @@ export const Categorias = () => {
   const [categoriaToDelete, setCategoriaToDelete] = useState<Categoria | null>(
     null,
   );
-  const [
-    createEditSubcategoriaOpenDialog,
-    setCreateEditSubcategoriaOpenDialog,
-  ] = useState<boolean>(false);
+  const [createSubcategoriaOpenDialog, setEditSubcategoriaOpenDialog] =
+    useState<boolean>(false);
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -77,6 +76,10 @@ export const Categorias = () => {
     useDeleteCategoria();
   const { mutateAsync: crearSubcategoria, isPending: isCreatingSubcategoria } =
     useCreateSubcategoria();
+  const {
+    mutateAsync: actualizarSubcategoria,
+    isPending: isUpdatingSubcategoria,
+  } = useEditarSubcategoria();
   const {
     mutateAsync: eliminarSubcategoria,
     isPending: isDeletingSubcategoria,
@@ -108,12 +111,12 @@ export const Categorias = () => {
   ) => {
     const defaultValues: Partial<Subcategoria> = subcategoria ?? { categoria };
     setSubcategoriaAEditar(defaultValues);
-    setCreateEditSubcategoriaOpenDialog(true);
+    setEditSubcategoriaOpenDialog(true);
   };
 
-  const closeCreateEditSubcategoriaDialog = () => {
+  const closeCreateSubcategoriaDialog = () => {
     setSubcategoriaAEditar(undefined);
-    setCreateEditSubcategoriaOpenDialog(false);
+    setEditSubcategoriaOpenDialog(false);
   };
 
   const handleCreateEditCategoria = async (
@@ -127,15 +130,9 @@ export const Categorias = () => {
     closeCreateEditCategoriaDialog();
   };
 
-  const handleCreateEditSubcategoria = async (
-    subcategoria: SubcategoriaBase | SubcategoriaEdit,
-  ) => {
-    if (subcategoriaAEditar?.id) {
-      //await actualizarSubcategoria(subcategoria as SubcategoriaEdit);
-    } else {
-      await crearSubcategoria(subcategoria as SubcategoriaBase);
-    }
-    closeCreateEditSubcategoriaDialog();
+  const handleCreateSubcategoria = async (subcategoria: SubcategoriaBase) => {
+    await crearSubcategoria(subcategoria as SubcategoriaBase);
+    closeCreateSubcategoriaDialog();
   };
 
   const onDeleteCategoria = async () => {
@@ -153,6 +150,7 @@ export const Categorias = () => {
     renderDetailPanel: ({ row }) => (
       <Subcategorias
         onEliminarSubcategoria={eliminarSubcategoria}
+        onActualizarSubcategoria={actualizarSubcategoria}
         subcategorias={row.original.subcategorias || []}
         categoriaPadre={row.original}
       />
@@ -171,7 +169,8 @@ export const Categorias = () => {
         isUpdatingCategoria ||
         isDeletingCategoria ||
         isCreatingSubcategoria ||
-        isDeletingSubcategoria,
+        isDeletingSubcategoria ||
+        isUpdatingSubcategoria,
       showAlertBanner: isError,
     },
     muiToolbarAlertBannerProps: isError
@@ -239,9 +238,9 @@ export const Categorias = () => {
         initialCategory={categoriaAEditar || {}}
       />
       <SubcategoriaCreateEditDialog
-        open={createEditSubcategoriaOpenDialog}
-        onClose={closeCreateEditSubcategoriaDialog}
-        onSubmit={handleCreateEditSubcategoria}
+        open={createSubcategoriaOpenDialog}
+        onClose={closeCreateSubcategoriaDialog}
+        onSubmit={handleCreateSubcategoria}
         initialSubcategory={subcategoriaAEditar || {}}
         categorias={data}
       />

@@ -12,3 +12,7 @@ export interface Categoria extends BasicEntity {
 export interface Subcategoria extends BasicEntity {
   categoria: Categoria;
 }
+
+export interface SubcategoriaEditPayload extends BasicEntity {
+  categoriaId: string;
+}

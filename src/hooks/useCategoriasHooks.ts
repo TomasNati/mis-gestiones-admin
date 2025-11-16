@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   actualizarCategoria,
+  actualizarSubcategoria,
   createCategoria,
   createSubcategoria,
   eliminarCategoria,
@@ -65,6 +66,12 @@ const actualizarSubcategoriaDeCategoria = (
         : [newSubcategoria];
       break;
     }
+    case "editar": {
+      categoriaPadre.subcategorias = categoriaPadre.subcategorias?.map((sub) =>
+        sub.id === subcategoria.id ? subcategoria : sub,
+      );
+      break;
+    }
     case "eliminar": {
       categoriaPadre.subcategorias = categoriaPadre.subcategorias?.filter(
         ({ id }) => id !== subcategoria.id,
@@ -124,6 +131,34 @@ export const useDeleteSubcategoria = () => {
             subcategoria,
             prevCategorias,
             "eliminar",
+          ),
+      );
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_CATEGORIAS_FETCH],
+      }),
+  });
+};
+
+export const useEditarSubcategoria = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (subcategoria: SubcategoriaEdit) => {
+      await actualizarSubcategoria({
+        ...subcategoria,
+        categoriaId: subcategoria.categoria.id,
+      });
+    },
+    onMutate: (subcategoria: SubcategoriaEdit) => {
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_CATEGORIAS_FETCH] },
+        (prevCategorias: Categoria[]) =>
+          actualizarSubcategoriaDeCategoria(
+            subcategoria,
+            prevCategorias,
+            "editar",
           ),
       );
     },

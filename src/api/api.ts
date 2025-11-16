@@ -1,5 +1,9 @@
 import axios from "axios";
-import { type Categoria, type Subcategoria } from "model/types";
+import {
+  type Categoria,
+  type Subcategoria,
+  type SubcategoriaEditPayload,
+} from "model/types";
 import {
   type CategoriaBase,
   type CategoriaEdit,
@@ -59,10 +63,10 @@ export const createSubcategoria = async (subcategoria: SubcategoriaBase) => {
 };
 
 export const actualizarSubcategoria = async (
-  subcategoria: SubcategoriaEdit,
+  subcategoria: SubcategoriaEditPayload,
 ) => {
-  const response = await apiClient.put<SubcategoriaEdit>(
-    `/subcategoria/${subcategoria.id}`,
+  const response = await apiClient.put<SubcategoriaEditPayload>(
+    `/subcategoria`,
     subcategoria,
   );
   return response;
