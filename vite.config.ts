@@ -9,6 +9,9 @@ export default defineConfig({
     alias: {
       api: path.resolve(__dirname, "src/api"),
       model: path.resolve(__dirname, "src/model"),
+      dialogs: path.resolve(__dirname, "src/dialogs"),
+      hooks: path.resolve(__dirname, "src/hooks"),
+      components: path.resolve(__dirname, "src/components"),
     },
   },
 });

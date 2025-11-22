@@ -17,20 +17,21 @@ import {
   useCreateSubcategoria,
   useDeleteSubcategoria,
   useEditarSubcategoria,
-} from "./hooks/useCategoriasHooks";
+} from "hooks/useCategoriasHooks";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
+import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type {
   CategoriaBase,
   CategoriaEdit,
   SubcategoriaBase,
 } from "model/models";
-import { CategoriaCreateEditDialog } from "./dialogs/CategoriaCreateEditDialog";
-import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
+import { CategoriaCreateEditDialog } from "dialogs/CategoriaCreateEditDialog";
+import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
 import { Subcategorias } from "./Subcategoria";
+import { FiltroActivas } from "./FiltroActivas";
 
 export const Categorias = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -47,6 +48,7 @@ export const Categorias = () => {
   );
   const [createSubcategoriaOpenDialog, setEditSubcategoriaOpenDialog] =
     useState<boolean>(false);
+  const [soloActivas, setSoloActivas] = useState(true);
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -66,7 +68,7 @@ export const Categorias = () => {
     [],
   );
 
-  const { isError, isLoading, data } = useFetchCategorias();
+  const { isError, isLoading, data } = useFetchCategorias(soloActivas);
   const { mutateAsync: createCategoria, isPending: isCreatingCategoria } =
     useCreateCategoria();
   const { mutateAsync: actualizarCategoria, isPending: isUpdatingCategoria } =
@@ -142,6 +144,10 @@ export const Categorias = () => {
     closeDeleteConfirmModal();
   };
 
+  const handleSoloActivasChanged = (soloActivas: boolean) => {
+    setSoloActivas(soloActivas);
+  };
+
   const table = useMaterialReactTable({
     columns,
     data,
@@ -190,6 +196,10 @@ export const Categorias = () => {
     ),
     renderToolbarInternalActions: ({ table }) => (
       <>
+        <FiltroActivas
+          soloActivas={soloActivas}
+          onSoloActivasChanged={handleSoloActivasChanged}
+        />
         <MRT_ToggleFiltersButton table={table} />
         <MRT_ToggleDensePaddingButton table={table} />
         <MRT_ToggleFullScreenButton table={table} />

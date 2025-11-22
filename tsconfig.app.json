@@ -27,7 +27,10 @@
     "baseUrl": ".",
     "paths": {
       "api/*": ["src/api/*"],
-      "model/*": ["src/model/*"]
+      "model/*": ["src/model/*"],
+      "dialogs/*": ["src/dialogs/*"],
+      "hooks/*": ["src/hooks/*"],
+      "components/*": ["src/components/*"]
     }
   },
   "include": ["src"]

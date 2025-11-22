@@ -19,8 +19,10 @@ const apiClient = axios.create({
   },
 });
 
-export const fetchCategorias = async () => {
-  const response = await apiClient.get<Categoria[]>("/categorias?active=true");
+export const fetchCategorias = async (soloActivas: boolean = true) => {
+  const response = await apiClient.get<Categoria[]>(
+    `/categorias?${soloActivas ? "active=true" : ""}`,
+  );
   return response.data;
 };
 

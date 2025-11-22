@@ -211,11 +211,11 @@ export const useEditarCategoria = () => {
   });
 };
 
-export const useFetchCategorias = () => {
+export const useFetchCategorias = (soloActivas: boolean = true) => {
   const { isPending, error, data, isLoading, isError } = useQuery<Categoria[]>({
-    queryKey: [QUERY_CATEGORIAS_FETCH],
+    queryKey: [QUERY_CATEGORIAS_FETCH, soloActivas],
     queryFn: async () => {
-      const categorias = await fetchCategorias();
+      const categorias = await fetchCategorias(soloActivas);
       return categorias;
     },
   });

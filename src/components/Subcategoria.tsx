@@ -8,9 +8,9 @@ import type { Categoria, Subcategoria } from "model/types";
 import { useMemo, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { DeleteConfirmationDialog } from "./dialogs/DeleteConfirmationDialog";
+import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
-import { SubcategoriaCreateEditDialog } from "./dialogs/SubcategoriaCreateEditDialog";
+import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
