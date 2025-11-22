@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
+import { themeOptions } from "../Theme";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -95,6 +96,14 @@ export const Subcategorias = ({
     enableColumnActions: false,
     enableColumnFilters: false,
     enablePagination: false,
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor:
+          row.original.active === false
+            ? themeOptions.table.row.disabled
+            : themeOptions.background?.default,
+      },
+    }),
     renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">

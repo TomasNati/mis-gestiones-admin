@@ -21,6 +21,11 @@ declare module "@mui/material/styles" {
     success?: {
       main?: string;
     };
+    table: {
+      row: {
+        disabled: string;
+      };
+    };
   }
 }
 
@@ -46,6 +51,11 @@ export const themeOptions: ThemeOptions = {
     },
     success: {
       main: "rgba(90,203,96,0.63)",
+    },
+  },
+  table: {
+    row: {
+      disabled: "#808080",
     },
   },
 };

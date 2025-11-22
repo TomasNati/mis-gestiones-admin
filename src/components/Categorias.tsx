@@ -32,6 +32,7 @@ import { CategoriaCreateEditDialog } from "dialogs/CategoriaCreateEditDialog";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
 import { Subcategorias } from "./Subcategoria";
 import { FiltroActivas } from "./FiltroActivas";
+import { themeOptions } from "../Theme";
 
 export const Categorias = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -152,6 +153,14 @@ export const Categorias = () => {
     columns,
     data,
     rowCount: data.length,
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor:
+          row.original.active === false
+            ? themeOptions.table.row.disabled
+            : themeOptions.background?.default,
+      },
+    }),
     renderDetailPanel: ({ row }) => (
       <Subcategorias
         onEliminarSubcategoria={eliminarSubcategoria}
