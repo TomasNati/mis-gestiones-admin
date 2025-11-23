@@ -22,6 +22,7 @@ import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutline";
+import SettingsBackupRestoreOutlinedIcon from "@mui/icons-material/SettingsBackupRestoreOutlined";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type {
   CategoriaBase,
@@ -151,6 +152,10 @@ export const Categorias = () => {
     setSoloActivas(soloActivas);
   };
 
+  const handleRestoreCategoria = (id: string) => {
+    console.log({ id });
+  };
+
   const table = useMaterialReactTable({
     columns,
     data,
@@ -223,31 +228,44 @@ export const Categorias = () => {
       </>
     ),
     renderRowActions: ({ row }) => (
-      <Box sx={{ display: "flex" }}>
-        <Tooltip title="Edit">
-          <IconButton
-            color="primary"
-            onClick={() => openCreateEditCategoriaDialog(row.original)}
-          >
-            <EditOutlinedIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton
-            color="primary"
-            onClick={() => openDeleteConfirmModal(row)}
-          >
-            <DeleteOutlinedIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Agregar Subcategoría">
-          <IconButton
-            color="primary"
-            onClick={() => openCreateEdiSubcategoriaDialog(row.original)}
-          >
-            <AddCircleOutlineIcon />
-          </IconButton>
-        </Tooltip>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        {row.original.active ? (
+          <>
+            <Tooltip title="Edit">
+              <IconButton
+                color="primary"
+                onClick={() => openCreateEditCategoriaDialog(row.original)}
+              >
+                <EditOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                color="primary"
+                onClick={() => openDeleteConfirmModal(row)}
+              >
+                <DeleteOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Agregar Subcategoría">
+              <IconButton
+                color="primary"
+                onClick={() => openCreateEdiSubcategoriaDialog(row.original)}
+              >
+                <AddCircleOutlineIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        ) : (
+          <Tooltip title="Restore">
+            <IconButton
+              color="primary"
+              onClick={() => handleRestoreCategoria(row.original.id)}
+            >
+              <SettingsBackupRestoreOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     ),
     enableEditing: true,

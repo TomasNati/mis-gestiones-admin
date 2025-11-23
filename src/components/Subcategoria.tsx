@@ -8,6 +8,7 @@ import type { Categoria, Subcategoria } from "model/types";
 import { useMemo, useState } from "react";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutline";
+import SettingsBackupRestoreOutlinedIcon from "@mui/icons-material/SettingsBackupRestoreOutlined";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
@@ -90,6 +91,10 @@ export const Subcategorias = ({
     closeDeleteConfirmModal();
   };
 
+  const handleRestore = (id: string) => {
+    console.log({ id });
+  };
+
   const tableSubcategorias = useMaterialReactTable({
     columns: columnsSubcategorias,
     data: subcategorias || [],
@@ -106,23 +111,38 @@ export const Subcategorias = ({
       sx: styles.cell({ tipoGrilla: "subcategoria" }),
     }),
     renderRowActions: ({ row }) => (
-      <Box sx={{ display: "flex" }}>
-        <Tooltip title="Edit">
-          <IconButton
-            color="secondary"
-            onClick={() => openEditSubcategoriaDialog(row.original)}
-          >
-            <EditOutlinedIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton
-            color="secondary"
-            onClick={() => openDeleteConfirmModal(row.original)}
-          >
-            <DeleteOutlinedIcon />
-          </IconButton>
-        </Tooltip>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        {categoriaPadre.active ? (
+          row.original.active ? (
+            <>
+              <Tooltip title="Edit">
+                <IconButton
+                  color="secondary"
+                  onClick={() => openEditSubcategoriaDialog(row.original)}
+                >
+                  <EditOutlinedIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <IconButton
+                  color="secondary"
+                  onClick={() => openDeleteConfirmModal(row.original)}
+                >
+                  <DeleteOutlinedIcon />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <Tooltip title="Restore">
+              <IconButton
+                color="secondary"
+                onClick={() => handleRestore(row.original.id)}
+              >
+                <SettingsBackupRestoreOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+          )
+        ) : null}
       </Box>
     ),
     initialState: {
