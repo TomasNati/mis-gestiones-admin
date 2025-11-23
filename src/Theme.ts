@@ -64,6 +64,19 @@ export const customTheme = createTheme({
   ...themeOptions,
   components: {
     ...(themeOptions.components || {}),
+    MuiIconButton: {
+      styleOverrides: {
+        ...(themeOptions.components?.MuiIconButton?.styleOverrides || {}),
+        root: {
+          "&:focus": {
+            outline: "1px solid #4fc3f7",
+          },
+          "&:focus-visible": {
+            outline: "1px solid #4fc3f7",
+          },
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         ...(themeOptions.components?.MuiButton?.styleOverrides || {}),

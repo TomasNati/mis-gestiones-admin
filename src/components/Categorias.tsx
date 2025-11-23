@@ -20,8 +20,8 @@ import {
 } from "hooks/useCategoriasHooks";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutline";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type {
   CategoriaBase,
@@ -50,6 +50,9 @@ export const Categorias = () => {
   const [createSubcategoriaOpenDialog, setEditSubcategoriaOpenDialog] =
     useState<boolean>(false);
   const [soloActivas, setSoloActivas] = useState(true);
+  const [density, setDensity] = useState<
+    "comfortable" | "compact" | "spacious"
+  >("comfortable");
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -153,12 +156,21 @@ export const Categorias = () => {
     columns,
     data,
     rowCount: data.length,
+    onDensityChange: setDensity,
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
         backgroundColor:
           row.original.active === false
             ? themeOptions.table.row.disabled
             : themeOptions.background?.default,
+        "& .MuiIconButton-root": {
+          padding: density === "compact" ? "3px" : "8px",
+        },
+      },
+    }),
+    muiTableBodyCellProps: () => ({
+      sx: {
+        borderBottom: `1px solid ${"#92cde8"}`,
       },
     }),
     renderDetailPanel: ({ row }) => (
@@ -186,6 +198,7 @@ export const Categorias = () => {
         isDeletingSubcategoria ||
         isUpdatingSubcategoria,
       showAlertBanner: isError,
+      density,
     },
     muiToolbarAlertBannerProps: isError
       ? {
@@ -218,18 +231,23 @@ export const Categorias = () => {
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">
           <IconButton
+            color="primary"
             onClick={() => openCreateEditCategoriaDialog(row.original)}
           >
-            <EditIcon />
+            <EditOutlinedIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
-            <DeleteIcon />
+          <IconButton
+            color="primary"
+            onClick={() => openDeleteConfirmModal(row)}
+          >
+            <DeleteOutlinedIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Agregar Subcategoría">
           <IconButton
+            color="primary"
             onClick={() => openCreateEdiSubcategoriaDialog(row.original)}
           >
             <AddCircleOutlineIcon />

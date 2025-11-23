@@ -6,8 +6,8 @@ import {
 } from "material-react-table";
 import type { Categoria, Subcategoria } from "model/types";
 import { useMemo, useState } from "react";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutline";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
@@ -102,21 +102,32 @@ export const Subcategorias = ({
           row.original.active === false
             ? themeOptions.table.row.disabled
             : themeOptions.background?.default,
+        "& .MuiIconButton-root": {
+          padding: "3px",
+        },
+      },
+    }),
+    muiTableBodyCellProps: () => ({
+      sx: {
+        borderBottom: `1px solid ${"#6b9994"}`,
       },
     }),
     renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex" }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => openEditSubcategoriaDialog(row.original)}>
-            <EditIcon />
+          <IconButton
+            color="secondary"
+            onClick={() => openEditSubcategoriaDialog(row.original)}
+          >
+            <EditOutlinedIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
           <IconButton
-            color="error"
+            color="secondary"
             onClick={() => openDeleteConfirmModal(row.original)}
           >
-            <DeleteIcon />
+            <DeleteOutlinedIcon />
           </IconButton>
         </Tooltip>
       </Box>
