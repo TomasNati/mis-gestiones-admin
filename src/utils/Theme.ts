@@ -55,7 +55,7 @@ export const themeOptions: ThemeOptions = {
   },
   table: {
     row: {
-      disabled: "#808080",
+      disabled: "#3c566c",
     },
   },
 };
