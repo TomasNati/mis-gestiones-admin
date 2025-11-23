@@ -11,7 +11,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutline";
 import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import type { SubcategoriaBase, SubcategoriaEdit } from "model/models";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
-import { themeOptions } from "../Theme";
+import { styles } from "./styles";
 
 interface SubcategoriaProps {
   subcategorias: Subcategoria[];
@@ -97,20 +97,13 @@ export const Subcategorias = ({
     enableColumnFilters: false,
     enablePagination: false,
     muiTableBodyRowProps: ({ row }) => ({
-      sx: {
-        backgroundColor:
-          row.original.active === false
-            ? themeOptions.table.row.disabled
-            : themeOptions.background?.default,
-        "& .MuiIconButton-root": {
-          padding: "3px",
-        },
-      },
+      sx: styles.row({ active: row.original.active, density: "compact" }),
     }),
     muiTableBodyCellProps: () => ({
-      sx: {
-        borderBottom: `1px solid ${"#6b9994"}`,
-      },
+      sx: styles.cell({ tipoGrilla: "subcategoria" }),
+    }),
+    muiTableHeadCellProps: () => ({
+      sx: styles.cell({ tipoGrilla: "subcategoria" }),
     }),
     renderRowActions: ({ row }) => (
       <Box sx={{ display: "flex" }}>

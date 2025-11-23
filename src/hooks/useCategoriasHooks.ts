@@ -9,7 +9,7 @@ import {
   fetchCategorias,
 } from "api/api";
 import type { Categoria, Subcategoria } from "model/types";
-import { QUERY_CATEGORIAS_FETCH } from "../constants";
+import { QUERY_CATEGORIAS_FETCH } from "utils/constants";
 import {
   type CategoriaBase,
   type CategoriaEdit,

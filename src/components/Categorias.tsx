@@ -32,7 +32,8 @@ import { CategoriaCreateEditDialog } from "dialogs/CategoriaCreateEditDialog";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
 import { Subcategorias } from "./Subcategoria";
 import { FiltroActivas } from "./FiltroActivas";
-import { themeOptions } from "../Theme";
+import { styles } from "./styles";
+import { type Density } from "utils/types";
 
 export const Categorias = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -50,9 +51,7 @@ export const Categorias = () => {
   const [createSubcategoriaOpenDialog, setEditSubcategoriaOpenDialog] =
     useState<boolean>(false);
   const [soloActivas, setSoloActivas] = useState(true);
-  const [density, setDensity] = useState<
-    "comfortable" | "compact" | "spacious"
-  >("comfortable");
+  const [density, setDensity] = useState<Density>("comfortable");
 
   const columns = useMemo<MRT_ColumnDef<Categoria>[]>(
     () => [
@@ -158,20 +157,16 @@ export const Categorias = () => {
     rowCount: data.length,
     onDensityChange: setDensity,
     muiTableBodyRowProps: ({ row }) => ({
-      sx: {
-        backgroundColor:
-          row.original.active === false
-            ? themeOptions.table.row.disabled
-            : themeOptions.background?.default,
-        "& .MuiIconButton-root": {
-          padding: density === "compact" ? "3px" : "8px",
-        },
-      },
+      sx: styles.row({ active: row.original.active, density }),
     }),
     muiTableBodyCellProps: () => ({
-      sx: {
-        borderBottom: `1px solid ${"#92cde8"}`,
-      },
+      sx: styles.cell({ tipoGrilla: "categoria" }),
+    }),
+    muiTableHeadCellProps: () => ({
+      sx: styles.cell({ tipoGrilla: "categoria" }),
+    }),
+    muiDetailPanelProps: () => ({
+      sx: styles.cell({ tipoGrilla: "categoria" }),
     }),
     renderDetailPanel: ({ row }) => (
       <Subcategorias

@@ -12,6 +12,7 @@ export default defineConfig({
       dialogs: path.resolve(__dirname, "src/dialogs"),
       hooks: path.resolve(__dirname, "src/hooks"),
       components: path.resolve(__dirname, "src/components"),
+      utils: path.resolve(__dirname, "src/utils"),
     },
   },
 });
