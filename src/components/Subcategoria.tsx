@@ -91,8 +91,13 @@ export const Subcategorias = ({
     closeDeleteConfirmModal();
   };
 
-  const handleRestore = (id: string) => {
-    console.log({ id });
+  const handleRestore = async (subcategoria: Subcategoria) => {
+    const payload: Subcategoria = {
+      ...subcategoria,
+      active: true,
+      categoria: { ...categoriaPadre, subcategorias: undefined },
+    };
+    await onActualizarSubcategoria(payload);
   };
 
   const tableSubcategorias = useMaterialReactTable({
@@ -136,7 +141,7 @@ export const Subcategorias = ({
             <Tooltip title="Restore">
               <IconButton
                 color="secondary"
-                onClick={() => handleRestore(row.original.id)}
+                onClick={() => handleRestore(row.original)}
               >
                 <SettingsBackupRestoreOutlinedIcon />
               </IconButton>

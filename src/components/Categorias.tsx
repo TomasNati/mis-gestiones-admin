@@ -152,8 +152,9 @@ export const Categorias = () => {
     setSoloActivas(soloActivas);
   };
 
-  const handleRestoreCategoria = (id: string) => {
-    console.log({ id });
+  const handleRestoreCategoria = async (categoria: Categoria) => {
+    categoria.active = true;
+    await actualizarCategoria(categoria as CategoriaEdit);
   };
 
   const table = useMaterialReactTable({
@@ -260,7 +261,7 @@ export const Categorias = () => {
           <Tooltip title="Restore">
             <IconButton
               color="primary"
-              onClick={() => handleRestoreCategoria(row.original.id)}
+              onClick={() => handleRestoreCategoria(row.original)}
             >
               <SettingsBackupRestoreOutlinedIcon />
             </IconButton>
