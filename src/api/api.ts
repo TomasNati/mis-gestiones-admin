@@ -77,3 +77,28 @@ export const eliminarSubcategoria = async (subcategoriaId: string) => {
   const response = await apiClient.delete(`/subcategoria/${subcategoriaId}`);
   return response.status == 204;
 };
+
+export const fetchInstrumentos = async (soloActivas: boolean = true) => {
+  const response = await apiClient.get(
+    `/instrumentos?${soloActivas ? "active=true" : ""}`,
+  );
+  return response.data;
+};
+
+export const createInstrumento = async (instrumento: any) => {
+  const response = await apiClient.post(`/instrumento`, instrumento);
+  return response;
+};
+
+export const actualizarInstrumento = async (instrumento: any) => {
+  const response = await apiClient.put(
+    `/instrumento/${instrumento.id}`,
+    instrumento,
+  );
+  return response;
+};
+
+export const eliminarInstrumento = async (instrumentoId: string) => {
+  const response = await apiClient.delete(`/instrumento/${instrumentoId}`);
+  return response.status == 204;
+};
