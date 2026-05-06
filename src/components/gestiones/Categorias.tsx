@@ -32,7 +32,7 @@ import type {
 import { CategoriaCreateEditDialog } from "dialogs/CategoriaCreateEditDialog";
 import { SubcategoriaCreateEditDialog } from "dialogs/SubcategoriaCreateEditDialog";
 import { Subcategorias } from "./Subcategoria";
-import { FiltroActivas } from "./FiltroActivas";
+import { FiltroActivas } from "components/FiltroActivas";
 import { styles } from "./styles";
 import { type Density } from "utils/types";
 
