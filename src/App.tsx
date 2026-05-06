@@ -1,8 +1,8 @@
 import "./App.css";
-import { Categorias } from "./components/Categorias";
+import { MainLayout } from "./components/MainLayout";
 
 function App() {
-  return <Categorias />;
+  return <MainLayout />;
 }
 
 export default App;
