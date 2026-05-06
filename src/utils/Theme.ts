@@ -43,7 +43,7 @@ export const themeOptions: ThemeOptions = {
       main: "#4db6ac",
     },
     background: {
-      default: "#455a64",
+      default: "#101414",}
       paper: "#546e7a",
     },
     error: {
