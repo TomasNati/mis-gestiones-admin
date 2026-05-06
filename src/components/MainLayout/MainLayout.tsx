@@ -1,44 +1,24 @@
 import React, { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Button,
-  Menu,
+import { AppBar, Toolbar, Box, Typography } from "@mui/material";
+import Menubar, {
+  MenuRoot,
+  MenuTrigger,
+  MenuPortal,
+  MenuPositioner,
+  MenuPopup,
   MenuItem,
-  Box,
-  Typography,
-} from "@mui/material";
+  MenuSeparator,
+} from "../Menubar";
 import { Categorias } from "../gestiones/Categorias";
 import { Enumerados } from "../inversiones/Enumerados";
 import { Instrumentos } from "../inversiones/Instrumentos";
-import { styles } from "./styles";
 
 type View = "categorias" | "enumerados" | "instrumentos";
 
 export const MainLayout: React.FC = () => {
-  const [anchorGestiones, setAnchorGestiones] = useState<null | HTMLElement>(
-    null,
-  );
-  const [anchorInversiones, setAnchorInversiones] =
-    useState<null | HTMLElement>(null);
   const [view, setView] = useState<View>("categorias");
 
-  // active group state helpers
-  const isGestionesActive = view === "categorias";
-  const isInversionesActive = ["enumerados", "instrumentos"].includes(view);
-
-  const openGestiones = (e: React.MouseEvent<HTMLElement>) =>
-    setAnchorGestiones(e.currentTarget);
-  const closeGestiones = () => setAnchorGestiones(null);
-  const openInversiones = (e: React.MouseEvent<HTMLElement>) =>
-    setAnchorInversiones(e.currentTarget);
-  const closeInversiones = () => setAnchorInversiones(null);
-
-  const handleSelect = (v: View) => {
-    setView(v);
-    closeGestiones();
-    closeInversiones();
-  };
+  const handleSelect = (v: View) => setView(v);
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -49,52 +29,41 @@ export const MainLayout: React.FC = () => {
         sx={{ borderBottom: 1, borderColor: "divider" }}
       >
         <Toolbar sx={{ display: "flex", gap: 2 }}>
-          <Button
-            onClick={openGestiones}
-            aria-controls={anchorGestiones ? "gestiones-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={anchorGestiones ? "true" : undefined}
-            color="inherit"
-            className={isGestionesActive ? "active" : "inactive"}
-            sx={styles.menu}
-          >
-            <Typography variant="button">Gestiones</Typography>
-          </Button>
-          <Menu
-            id="gestiones-menu"
-            anchorEl={anchorGestiones}
-            open={Boolean(anchorGestiones)}
-            onClose={closeGestiones}
-          >
-            <MenuItem onClick={() => handleSelect("categorias")}>
-              Categorias
-            </MenuItem>
-          </Menu>
+          <Menubar>
+            <MenuRoot>
+              <MenuTrigger>
+                <Typography variant="button">Gestiones</Typography>
+              </MenuTrigger>
+              <MenuPortal>
+                <MenuPositioner>
+                  <MenuPopup>
+                    <MenuItem onSelect={() => handleSelect("categorias")}>
+                      Categorias
+                    </MenuItem>
+                  </MenuPopup>
+                </MenuPositioner>
+              </MenuPortal>
+            </MenuRoot>
 
-          <Button
-            onClick={openInversiones}
-            aria-controls={anchorInversiones ? "inversiones-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={anchorInversiones ? "true" : undefined}
-            color="inherit"
-            className={isInversionesActive ? "active" : "inactive"}
-            sx={styles.menu}
-          >
-            <Typography variant="button">Inversiones</Typography>
-          </Button>
-          <Menu
-            id="inversiones-menu"
-            anchorEl={anchorInversiones}
-            open={Boolean(anchorInversiones)}
-            onClose={closeInversiones}
-          >
-            <MenuItem onClick={() => handleSelect("enumerados")}>
-              Enumerados
-            </MenuItem>
-            <MenuItem onClick={() => handleSelect("instrumentos")}>
-              Instrumentos
-            </MenuItem>
-          </Menu>
+            <MenuRoot>
+              <MenuTrigger>
+                <Typography variant="button">Inversiones</Typography>
+              </MenuTrigger>
+              <MenuPortal>
+                <MenuPositioner>
+                  <MenuPopup>
+                    <MenuItem onSelect={() => handleSelect("enumerados")}>
+                      Enumerados
+                    </MenuItem>
+                    <MenuSeparator />
+                    <MenuItem onSelect={() => handleSelect("instrumentos")}>
+                      Instrumentos
+                    </MenuItem>
+                  </MenuPopup>
+                </MenuPositioner>
+              </MenuPortal>
+            </MenuRoot>
+          </Menubar>
         </Toolbar>
       </AppBar>
 
