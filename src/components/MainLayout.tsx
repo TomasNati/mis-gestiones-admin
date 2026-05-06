@@ -59,10 +59,12 @@ export const MainLayout: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      <Box component="main" sx={{ flex: 1, p: 2 }}>
-        {view === "categorias" && <Categorias />}
-        {view === "enumerados" && <Enumerados />}
-        {view === "instrumentos" && <Instrumentos />}
+      <Box component="main" sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column" }}>
+        <Box sx={{ flex: 1, overflow: "auto" }}>
+          {view === "categorias" && <Categorias />}
+          {view === "enumerados" && <Enumerados />}
+          {view === "instrumentos" && <Instrumentos />}
+        </Box>
       </Box>
     </Box>
   );
