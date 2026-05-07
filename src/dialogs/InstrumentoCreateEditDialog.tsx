@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { instrumentoBaseSchema, instrumentoEditSchema } from "model/models";
 import type { InstrumentoBase, InstrumentoEdit } from "model/models";
@@ -9,8 +9,9 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Autocomplete,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface InstrumentoCreateEditDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export const InstrumentoCreateEditDialog = ({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     reset,
@@ -42,6 +44,32 @@ export const InstrumentoCreateEditDialog = ({
   useEffect(() => {
     reset(initialInstrumento);
   }, [initialInstrumento, reset]);
+
+  const [tipoOptions, setTipoOptions] = useState<string[]>([]);
+  const [claseOptions, setClaseOptions] = useState<string[]>([]);
+  const [monedaOptions, setMonedaOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(
+          "https://mis-gestiones-backend.vercel.app/api/inversiones/meta",
+        );
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!mounted) return;
+        setTipoOptions(json.tipo || []);
+        setClaseOptions(json.clase_renta || []);
+        setMonedaOptions(json.moneda || []);
+      } catch (e) {
+        // ignore errors, options stay empty
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const hasErrors = Object.keys(errors).length > 0;
 
@@ -56,6 +84,7 @@ export const InstrumentoCreateEditDialog = ({
             label="Nombre"
             fullWidth
             margin="normal"
+            required
             {...register("nombre")}
             error={!!errors.nombre}
             helperText={errors.nombre?.message}
@@ -66,17 +95,51 @@ export const InstrumentoCreateEditDialog = ({
             margin="normal"
             {...register("codigo")}
           />
-          <TextField
-            label="Tipo"
-            fullWidth
-            margin="normal"
-            {...register("tipo")}
+          <Controller
+            name="tipo"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Autocomplete
+                options={tipoOptions}
+                value={field.value ?? null}
+                onChange={(_, v) => field.onChange(v)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tipo"
+                    margin="normal"
+                    fullWidth
+                    required
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+                disableClearable
+              />
+            )}
           />
-          <TextField
-            label="Clase Renta"
-            fullWidth
-            margin="normal"
-            {...register("clase_renta")}
+          <Controller
+            name="clase_renta"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Autocomplete
+                options={claseOptions}
+                value={field.value ?? null}
+                onChange={(_, v) => field.onChange(v)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Clase Renta"
+                    margin="normal"
+                    fullWidth
+                    required
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+                disableClearable
+              />
+            )}
           />
           <TextField
             label="Broker"
@@ -84,11 +147,28 @@ export const InstrumentoCreateEditDialog = ({
             margin="normal"
             {...register("broker")}
           />
-          <TextField
-            label="Moneda"
-            fullWidth
-            margin="normal"
-            {...register("moneda")}
+          <Controller
+            name="moneda"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Autocomplete
+                options={monedaOptions}
+                value={field.value ?? null}
+                onChange={(_, v) => field.onChange(v)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Moneda"
+                    margin="normal"
+                    fullWidth
+                    required
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+                disableClearable
+              />
+            )}
           />
         </DialogContent>
         <DialogActions>

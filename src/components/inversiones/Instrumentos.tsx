@@ -18,6 +18,7 @@ import { FiltroActivas } from "components/FiltroActivas";
 import { styles } from "../gestiones/styles";
 import { type Density } from "utils/types";
 import type { Instrumento } from "model/types";
+import type { InstrumentoEdit } from "model/models";
 import {
   useFetchInstrumentos,
   useCreateInstrumento,
@@ -96,8 +97,8 @@ export const Instrumentos = () => {
   };
 
   const handleRestoreInstrumento = async (instrumento: Instrumento) => {
-    instrumento.active = true;
-    await actualizarInstrumento(instrumento);
+    const instrumentoEdit = { ...instrumento, active: true } as unknown as InstrumentoEdit;
+    await actualizarInstrumento(instrumentoEdit);
   };
 
   const table = useMaterialReactTable({
@@ -197,7 +198,7 @@ export const Instrumentos = () => {
         open={createEditOpenDialog}
         onClose={closeCreateEditDialog}
         onSubmit={handleCreateEditInstrumento}
-        initialInstrumento={instrumentoAEditar || {}}
+        initialInstrumento={instrumentoAEditar as Partial<InstrumentoEdit> ?? {}}
       />
       <MaterialReactTable table={table} />
     </>

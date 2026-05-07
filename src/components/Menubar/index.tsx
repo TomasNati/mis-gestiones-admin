@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode, MouseEvent } from "react";
-import { Button, Menu, MenuItem as MUIMenuItem, Divider, Box } from "@mui/material";
+import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  Button,
+  Menu,
+  MenuItem as MUIMenuItem,
+  Divider,
+  Box,
+} from "@mui/material";
 
 type AnchorState = {
   anchorEl: HTMLElement | null;
@@ -25,7 +31,9 @@ export const MenuTrigger = ({ children }: { children: ReactNode }) => {
   const { setAnchorEl } = ctx;
   return (
     <Button
-      onClick={(e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget as HTMLElement)}
+      onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        setAnchorEl(e.currentTarget as HTMLElement)
+      }
       color="inherit"
     >
       {children}
@@ -34,8 +42,12 @@ export const MenuTrigger = ({ children }: { children: ReactNode }) => {
 };
 
 // MenuPortal and MenuPositioner are structural in this lightweight implementation
-export const MenuPortal = ({ children }: { children: ReactNode }) => <>{children}</>;
-export const MenuPositioner = ({ children }: { children: ReactNode }) => <Box>{children}</Box>;
+export const MenuPortal = ({ children }: { children: ReactNode }) => (
+  <>{children}</>
+);
+export const MenuPositioner = ({ children }: { children: ReactNode }) => (
+  <Box>{children}</Box>
+);
 
 // MenuPopup: renders the actual MUI Menu anchored to the trigger
 export const MenuPopup = ({ children }: { children: ReactNode }) => {
@@ -45,13 +57,24 @@ export const MenuPopup = ({ children }: { children: ReactNode }) => {
   const open = Boolean(anchorEl);
   const handleClose = () => setAnchorEl(null);
   return (
-    <Menu anchorEl={anchorEl} open={open} onClose={handleClose} MenuListProps={{ role: "menu" }}>
+    <Menu
+      anchorEl={anchorEl}
+      open={open}
+      onClose={handleClose}
+      MenuListProps={{ role: "menu" }}
+    >
       {children}
     </Menu>
   );
 };
 
-export const MenuItem = ({ children, onSelect }: { children: ReactNode; onSelect?: () => void }) => {
+export const MenuItem = ({
+  children,
+  onSelect,
+}: {
+  children: ReactNode;
+  onSelect?: () => void;
+}) => {
   const ctx = useContext(MenuRootContext);
   const handleClick = () => {
     if (onSelect) onSelect();
@@ -67,7 +90,11 @@ const SubmenuContext = createContext<AnchorState | null>(null);
 
 export const MenuSubmenuRoot = ({ children }: { children: ReactNode }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  return <SubmenuContext.Provider value={{ anchorEl, setAnchorEl }}>{children}</SubmenuContext.Provider>;
+  return (
+    <SubmenuContext.Provider value={{ anchorEl, setAnchorEl }}>
+      {children}
+    </SubmenuContext.Provider>
+  );
 };
 
 export const MenuSubmenuTrigger = ({ children }: { children: ReactNode }) => {
@@ -75,7 +102,9 @@ export const MenuSubmenuTrigger = ({ children }: { children: ReactNode }) => {
   if (!ctx) return null;
   const { setAnchorEl } = ctx;
   return (
-    <MUIMenuItem onClick={(e) => setAnchorEl(e.currentTarget as HTMLElement)}>{children}</MUIMenuItem>
+    <MUIMenuItem onClick={(e) => setAnchorEl(e.currentTarget as HTMLElement)}>
+      {children}
+    </MUIMenuItem>
   );
 };
 
@@ -86,7 +115,13 @@ export const MenuSubmenuPopup = ({ children }: { children: ReactNode }) => {
   const open = Boolean(anchorEl);
   const handleClose = () => setAnchorEl(null);
   return (
-    <Menu anchorEl={anchorEl} open={open} onClose={handleClose} anchorOrigin={{ vertical: "top", horizontal: "right" }} transformOrigin={{ vertical: "top", horizontal: "left" }}>
+    <Menu
+      anchorEl={anchorEl}
+      open={open}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      transformOrigin={{ vertical: "top", horizontal: "left" }}
+    >
       {children}
     </Menu>
   );
@@ -94,7 +129,11 @@ export const MenuSubmenuPopup = ({ children }: { children: ReactNode }) => {
 
 // Top-level Menubar container — lays out MenuRoot children horizontally
 export const Menubar = ({ children }: { children: ReactNode }) => {
-  return <Box component="nav" sx={{ display: "flex", gap: 1 }}>{children}</Box>;
+  return (
+    <Box component="nav" sx={{ display: "flex", gap: 1 }}>
+      {children}
+    </Box>
+  );
 };
 
 // Default export to ease imports
