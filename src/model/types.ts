@@ -21,7 +21,6 @@ export interface Instrumento extends BasicEntity {
   codigo?: string | null;
   tipo?: string | null;
   clase_renta?: string | null;
-  broker?: string | null;
   moneda?: string | null;
   precios?: any[];
 }

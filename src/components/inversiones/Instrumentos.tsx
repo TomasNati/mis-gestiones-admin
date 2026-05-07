@@ -45,7 +45,6 @@ export const Instrumentos = () => {
       { accessorKey: "codigo", header: "Código", size: 120 },
       { accessorKey: "tipo", header: "Tipo", size: 120 },
       { accessorKey: "clase_renta", header: "Clase Renta", size: 140 },
-      { accessorKey: "broker", header: "Broker", size: 140 },
       { accessorKey: "moneda", header: "Moneda", size: 100 },
     ],
     [],

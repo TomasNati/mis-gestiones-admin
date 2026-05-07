@@ -31,7 +31,6 @@ export const instrumentoBaseSchema = z.object({
   codigo: z.string().optional().nullable(),
   tipo: z.string().min(1, "Tipo es requerido"),
   clase_renta: z.string().min(1, "Clase de Renta es requerida"),
-  broker: z.string().optional().nullable(),
   moneda: z.string().min(1, "Moneda es requerida"),
 });
 

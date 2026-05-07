@@ -141,12 +141,6 @@ export const InstrumentoCreateEditDialog = ({
               />
             )}
           />
-          <TextField
-            label="Broker"
-            fullWidth
-            margin="normal"
-            {...register("broker")}
-          />
           <Controller
             name="moneda"
             control={control}
