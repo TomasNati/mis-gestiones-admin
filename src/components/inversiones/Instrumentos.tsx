@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -25,6 +25,9 @@ import {
   useDeleteInstrumento,
   useEditarInstrumento,
 } from "hooks/useInstrumentosHooks";
+import axios from "axios";
+import { INSTRUMENTO_TIPO } from "utils/constants";
+import type { CryptoQuoteResponse } from "model/types";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
 
 export const Instrumentos = () => {
@@ -38,6 +41,7 @@ export const Instrumentos = () => {
     useState<Instrumento | null>(null);
   const [soloActivas, setSoloActivas] = useState(true);
   const [density, setDensity] = useState<Density>("comfortable");
+  const [precios, setPrecios] = useState<Record<string, number | string>>({});
 
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
@@ -46,8 +50,31 @@ export const Instrumentos = () => {
       { accessorKey: "tipo", header: "Tipo", size: 120 },
       { accessorKey: "clase_renta", header: "Clase Renta", size: 140 },
       { accessorKey: "moneda", header: "Moneda", size: 100 },
+      {
+        id: "precio",
+        header: "Precio",
+        size: 140,
+        Cell: ({ row }) => {
+          const ins = row.original as Instrumento;
+          if (ins.tipo !== INSTRUMENTO_TIPO.CRIPTO) return null;
+          const p = precios[ins.id];
+          if (p == null || p === "") return "Loading...";
+          if (typeof p === "number") {
+            try {
+              return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: "USD",
+                maximumFractionDigits: 2,
+              }).format(p as number);
+            } catch {
+              return String(p);
+            }
+          }
+          return String(p);
+        },
+      },
     ],
-    [],
+    [precios],
   );
 
   const { isError, isLoading, data } = useFetchInstrumentos(soloActivas);
@@ -96,9 +123,58 @@ export const Instrumentos = () => {
   };
 
   const handleRestoreInstrumento = async (instrumento: Instrumento) => {
-    const instrumentoEdit = { ...instrumento, active: true } as unknown as InstrumentoEdit;
+    const instrumentoEdit = {
+      ...instrumento,
+      active: true,
+    } as unknown as InstrumentoEdit;
     await actualizarInstrumento(instrumentoEdit);
   };
+
+  useEffect(() => {
+    const fetchPrecios = async () => {
+      if (!data || data.length === 0) return;
+      const criptos = data.filter((i) => i.tipo === INSTRUMENTO_TIPO.CRIPTO);
+      if (criptos.length === 0) return setPrecios({});
+
+      const results = await Promise.allSettled(
+        criptos.map(async (ins) => {
+          try {
+            const identifier = ins.codigo ?? ins.nombre;
+            const url = `https://mis-gestiones-backend.vercel.app/api/cotizaciones/crypto/${encodeURIComponent(
+              identifier,
+            )}`;
+            const resp = await axios.get(url);
+            const raw = resp?.data as any;
+            const mapped: CryptoQuoteResponse = {
+              Id: raw.id ?? raw.Id ?? "",
+              Nombre: raw.nombre ?? raw.Nombre ?? "",
+              PrecioUsd:
+                raw.precio_usd ?? raw.PrecioUsd ?? raw.precioUsd ?? null,
+              PrecioArs:
+                raw.precio_ars ?? raw.PrecioArs ?? raw.precioArs ?? null,
+              FechaActualizacion:
+                raw.fecha_actualizacion ?? raw.FechaActualizacion ?? "",
+            };
+            const precioVal = mapped.PrecioUsd ?? null;
+            return { id: ins.id, precio: precioVal } as {
+              id: string;
+              precio: number | null;
+            };
+          } catch (e) {
+            return { id: ins.id, precio: null };
+          }
+        }),
+      );
+      const map: Record<string, number | string> = {};
+      results.forEach((r) => {
+        if (r.status === "fulfilled") {
+          map[r.value.id] = r.value.precio ?? "";
+        }
+      });
+      setPrecios(map);
+    };
+    fetchPrecios();
+  }, [data]);
 
   const table = useMaterialReactTable({
     columns,
@@ -197,7 +273,9 @@ export const Instrumentos = () => {
         open={createEditOpenDialog}
         onClose={closeCreateEditDialog}
         onSubmit={handleCreateEditInstrumento}
-        initialInstrumento={instrumentoAEditar as Partial<InstrumentoEdit> ?? {}}
+        initialInstrumento={
+          (instrumentoAEditar as Partial<InstrumentoEdit>) ?? {}
+        }
       />
       <MaterialReactTable table={table} />
     </>

@@ -24,3 +24,11 @@ export interface Instrumento extends BasicEntity {
   moneda?: string | null;
   precios?: any[];
 }
+
+export interface CryptoQuoteResponse {
+  Id: string;
+  Nombre: string;
+  PrecioUsd: number;
+  PrecioArs: number;
+  FechaActualizacion: string;
+}
