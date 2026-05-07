@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { AppBar, Toolbar, Box, Typography } from "@mui/material";
 import Menubar, {
   MenuRoot,
@@ -9,16 +9,10 @@ import Menubar, {
   MenuItem,
   MenuSeparator,
 } from "../Menubar";
-import { Categorias } from "../gestiones/Categorias";
-import { Enumerados } from "../inversiones/Enumerados";
-import { Instrumentos } from "../inversiones/Instrumentos";
-
-type View = "categorias" | "enumerados" | "instrumentos";
+import { Outlet, useNavigate } from "react-router-dom";
 
 export const MainLayout: React.FC = () => {
-  const [view, setView] = useState<View>("categorias");
-
-  const handleSelect = (v: View) => setView(v);
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -37,7 +31,7 @@ export const MainLayout: React.FC = () => {
               <MenuPortal>
                 <MenuPositioner>
                   <MenuPopup>
-                    <MenuItem onSelect={() => handleSelect("categorias")}>
+                    <MenuItem onSelect={() => navigate("/gestiones/categorias")}>
                       Categorias
                     </MenuItem>
                   </MenuPopup>
@@ -52,11 +46,11 @@ export const MainLayout: React.FC = () => {
               <MenuPortal>
                 <MenuPositioner>
                   <MenuPopup>
-                    <MenuItem onSelect={() => handleSelect("enumerados")}>
+                    <MenuItem onSelect={() => navigate("/inversiones/enumerados")}>
                       Enumerados
                     </MenuItem>
                     <MenuSeparator />
-                    <MenuItem onSelect={() => handleSelect("instrumentos")}>
+                    <MenuItem onSelect={() => navigate("/inversiones/instrumentos")}>
                       Instrumentos
                     </MenuItem>
                   </MenuPopup>
@@ -72,9 +66,7 @@ export const MainLayout: React.FC = () => {
         sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column" }}
       >
         <Box sx={{ flex: 1, overflow: "auto" }}>
-          {view === "categorias" && <Categorias />}
-          {view === "enumerados" && <Enumerados />}
-          {view === "instrumentos" && <Instrumentos />}
+          <Outlet />
         </Box>
       </Box>
     </Box>
