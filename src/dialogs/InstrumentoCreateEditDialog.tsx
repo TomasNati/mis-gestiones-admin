@@ -54,7 +54,7 @@ export const InstrumentoCreateEditDialog = ({
     (async () => {
       try {
         const res = await fetch(
-          "https://mis-gestiones-backend.vercel.app/api/inversiones/meta",
+          "https://mis-gestiones-backend.vercel.app/api/inversiones/inversiones/meta",
         );
         if (!res.ok) return;
         const json = await res.json();

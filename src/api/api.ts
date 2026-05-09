@@ -80,25 +80,30 @@ export const eliminarSubcategoria = async (subcategoriaId: string) => {
 
 export const fetchInstrumentos = async (soloActivas: boolean = true) => {
   const response = await apiClient.get(
-    `/instrumentos?${soloActivas ? "active=true" : ""}`,
+    `/inversiones/instrumentos?${soloActivas ? "active=true" : ""}`,
   );
   return response.data;
 };
 
 export const createInstrumento = async (instrumento: any) => {
-  const response = await apiClient.post(`/instrumento`, instrumento);
+  const response = await apiClient.post(
+    `/inversiones/instrumento`,
+    instrumento,
+  );
   return response;
 };
 
 export const actualizarInstrumento = async (instrumento: any) => {
   const response = await apiClient.put(
-    `/instrumento/${instrumento.id}`,
+    `/inversiones/instrumento/${instrumento.id}`,
     instrumento,
   );
   return response;
 };
 
 export const eliminarInstrumento = async (instrumentoId: string) => {
-  const response = await apiClient.delete(`/instrumento/${instrumentoId}`);
+  const response = await apiClient.delete(
+    `/inversiones/instrumento/${instrumentoId}`,
+  );
   return response.status == 204;
 };
