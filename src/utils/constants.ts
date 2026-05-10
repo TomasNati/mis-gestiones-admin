@@ -12,6 +12,3 @@ export const INSTRUMENTO_TIPO = {
   FCI_EXTERIOR: "FCI_EXTERIOR",
   ON: "ON",
 } as const;
-
-export type InstrumentoTipo =
-  (typeof INSTRUMENTO_TIPO)[keyof typeof INSTRUMENTO_TIPO];

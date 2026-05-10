@@ -25,9 +25,8 @@ import {
   useDeleteInstrumento,
   useEditarInstrumento,
 } from "hooks/useInstrumentosHooks";
-import axios from "axios";
+import { getCotizacionInstrumentoExterior } from "api/api";
 import { INSTRUMENTO_TIPO } from "utils/constants";
-import type { CryptoQuoteResponse } from "model/types";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
 
 export const Instrumentos = () => {
@@ -41,7 +40,9 @@ export const Instrumentos = () => {
     useState<Instrumento | null>(null);
   const [soloActivas, setSoloActivas] = useState(true);
   const [density, setDensity] = useState<Density>("comfortable");
-  const [precios, setPrecios] = useState<Record<string, number | string>>({});
+  const [preciosInternacionales, setPreciosInternacionales] = useState<
+    Record<string, number | string>
+  >({});
 
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
@@ -56,9 +57,9 @@ export const Instrumentos = () => {
         size: 140,
         Cell: ({ row }) => {
           const ins = row.original as Instrumento;
-          if (ins.tipo !== INSTRUMENTO_TIPO.CRIPTO) return null;
-          const p = precios[ins.id];
-          if (p == null || p === "") return "Loading...";
+          //if (ins.tipo !== INSTRUMENTO_TIPO.CRIPTO) return null;
+          const p = preciosInternacionales[ins.id];
+          if (p == null || p === "") return null;
           if (typeof p === "number") {
             try {
               return new Intl.NumberFormat(undefined, {
@@ -74,7 +75,7 @@ export const Instrumentos = () => {
         },
       },
     ],
-    [precios],
+    [preciosInternacionales],
   );
 
   const { isError, isLoading, data } = useFetchInstrumentos(soloActivas);
@@ -131,31 +132,28 @@ export const Instrumentos = () => {
   };
 
   useEffect(() => {
-    const fetchPrecios = async () => {
+    const fetchPrecioInstrumentosInternacionales = async () => {
       if (!data || data.length === 0) return;
-      const criptos = data.filter((i) => i.tipo === INSTRUMENTO_TIPO.CRIPTO);
-      if (criptos.length === 0) return setPrecios({});
+      const tiposInstrumentosInternacionales: string[] = [
+        INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
+        INSTRUMENTO_TIPO.ETF,
+        INSTRUMENTO_TIPO.FCI_EXTERIOR,
+        INSTRUMENTO_TIPO.CRIPTO,
+      ];
+
+      const instrumentos_internacionales = data.filter(
+        (i) => i.tipo && tiposInstrumentosInternacionales.includes(i.tipo),
+      );
+      if (instrumentos_internacionales.length === 0)
+        return setPreciosInternacionales({});
 
       const results = await Promise.allSettled(
-        criptos.map(async (ins) => {
+        instrumentos_internacionales.map(async (ins) => {
           try {
             const identifier = ins.codigo ?? ins.nombre;
-            const url = `https://mis-gestiones-backend.vercel.app/api/cotizaciones/crypto/${encodeURIComponent(
-              identifier,
-            )}`;
-            const resp = await axios.get(url);
-            const raw = resp?.data as any;
-            const mapped: CryptoQuoteResponse = {
-              Id: raw.id ?? raw.Id ?? "",
-              Nombre: raw.nombre ?? raw.Nombre ?? "",
-              PrecioUsd:
-                raw.precio_usd ?? raw.PrecioUsd ?? raw.precioUsd ?? null,
-              PrecioArs:
-                raw.precio_ars ?? raw.PrecioArs ?? raw.precioArs ?? null,
-              FechaActualizacion:
-                raw.fecha_actualizacion ?? raw.FechaActualizacion ?? "",
-            };
-            const precioVal = mapped.PrecioUsd ?? null;
+            const response = await getCotizacionInstrumentoExterior(identifier);
+
+            const precioVal = response?.price ?? null;
             return { id: ins.id, precio: precioVal } as {
               id: string;
               precio: number | null;
@@ -171,9 +169,9 @@ export const Instrumentos = () => {
           map[r.value.id] = r.value.precio ?? "";
         }
       });
-      setPrecios(map);
+      setPreciosInternacionales(map);
     };
-    fetchPrecios();
+    fetchPrecioInstrumentosInternacionales();
   }, [data]);
 
   const table = useMaterialReactTable({

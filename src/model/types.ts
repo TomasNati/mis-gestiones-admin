@@ -1,3 +1,5 @@
+import type { INSTRUMENTO_TIPO } from "utils/constants";
+
 export interface BasicEntity {
   id: string;
   nombre: string;
@@ -17,9 +19,12 @@ export interface SubcategoriaEditPayload extends BasicEntity {
   categoriaId: string;
 }
 
+export type InstrumentoTipo =
+  (typeof INSTRUMENTO_TIPO)[keyof typeof INSTRUMENTO_TIPO];
+
 export interface Instrumento extends BasicEntity {
   codigo?: string | null;
-  tipo?: string | null;
+  tipo?: InstrumentoTipo | null;
   clase_renta?: string | null;
   moneda?: string | null;
   precios?: any[];
