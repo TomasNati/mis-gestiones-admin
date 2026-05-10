@@ -9,6 +9,12 @@ import {
   type CategoriaEdit,
   type SubcategoriaBase,
 } from "model/models";
+import type {
+  DolarCotizacion,
+  FciLocal,
+  InstrumentoExterior,
+  InstrumentoLocal,
+} from "utils/types";
 
 const backendAPI = import.meta.env.VITE_BACKEND_API;
 
@@ -106,4 +112,47 @@ export const eliminarInstrumento = async (instrumentoId: string) => {
     `/inversiones/instrumento/${instrumentoId}`,
   );
   return response.status == 204;
+};
+
+export const getCotizacionFciLocal = async (
+  codigo_cafci: number,
+): Promise<FciLocal | null> => {
+  const { data } = await apiClient.get<FciLocal[]>(
+    `/cotizaciones/fondos?codigo_cafci=${codigo_cafci}`,
+  );
+  if (data.length > 0) {
+    return data[0];
+  }
+  return null;
+};
+
+export const getCotizacionInstrumentoExterior = async (
+  symbol: string,
+): Promise<InstrumentoExterior | null> => {
+  const { data } = await apiClient.get<InstrumentoExterior>(
+    `/cotizaciones/cotizaciones/us/${symbol}`,
+  );
+  if (data) {
+    return data;
+  }
+  return null;
+};
+
+export const getCotizacionInstrumentoLocal = async (
+  instrumento: string,
+): Promise<InstrumentoLocal | null> => {
+  const { data } = await apiClient.get<InstrumentoLocal>(
+    `/cotizaciones/instrumento/${instrumento}`,
+  );
+  if (data) {
+    return data;
+  }
+  return null;
+};
+
+export const getDolarCotizaciones = async (): Promise<DolarCotizacion[]> => {
+  const { data } = await apiClient.get<DolarCotizacion[]>(
+    "/cotizaciones/dolar",
+  );
+  return data;
 };

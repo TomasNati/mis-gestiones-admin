@@ -2,5 +2,16 @@ export const QUERY_CATEGORIAS_FETCH = "categorias";
 export const QUERY_INSTRUMENTOS_FETCH = "instrumentos";
 
 export const INSTRUMENTO_TIPO = {
+  ACCION_LOCAL: "ACCION_LOCAL",
+  ACCION_INTERNACIONAL: "ACCION_INTERNACIONAL",
+  BONO: "BONO",
+  CEDEAR: "CEDEAR",
   CRIPTO: "CRIPTO",
-};
+  ETF: "ETF",
+  FCI: "FCI",
+  FCI_EXTERIOR: "FCI_EXTERIOR",
+  ON: "ON",
+} as const;
+
+export type InstrumentoTipo =
+  (typeof INSTRUMENTO_TIPO)[keyof typeof INSTRUMENTO_TIPO];
