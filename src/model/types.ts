@@ -27,7 +27,7 @@ export interface Instrumento extends BasicEntity {
   tipo?: InstrumentoTipo | null;
   clase_renta?: string | null;
   moneda?: string | null;
-  precios?: any[];
+  precios?: number | null;
 }
 
 export interface CryptoQuoteResponse {

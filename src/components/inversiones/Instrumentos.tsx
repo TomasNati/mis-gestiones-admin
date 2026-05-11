@@ -24,10 +24,58 @@ import {
   useCreateInstrumento,
   useDeleteInstrumento,
   useEditarInstrumento,
+  useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
-import { getCotizacionInstrumentoExterior } from "api/api";
+import {
+  getCotizacionFciLocal,
+  getCotizacionInstrumentoExterior,
+  getCotizacionInstrumentoLocal,
+} from "api/api";
 import { INSTRUMENTO_TIPO } from "utils/constants";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
+
+type PrecioFetcher = {
+  tipos: string[];
+  fetchPrecio: (ins: Instrumento) => Promise<number | null>;
+};
+
+const PRECIO_FETCHERS: PrecioFetcher[] = [
+  {
+    tipos: [
+      INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
+      INSTRUMENTO_TIPO.ETF,
+      INSTRUMENTO_TIPO.FCI_EXTERIOR,
+      INSTRUMENTO_TIPO.CRIPTO,
+    ],
+    fetchPrecio: async (ins) => {
+      const identifier = ins.codigo ?? ins.nombre;
+      const r = await getCotizacionInstrumentoExterior(identifier);
+      return r?.price ?? null;
+    },
+  },
+  {
+    tipos: [
+      INSTRUMENTO_TIPO.ACCION_LOCAL,
+      INSTRUMENTO_TIPO.BONO,
+      INSTRUMENTO_TIPO.CEDEAR,
+      INSTRUMENTO_TIPO.ON,
+    ],
+    fetchPrecio: async (ins) => {
+      const identifier = ins.codigo ?? ins.nombre;
+      const r = await getCotizacionInstrumentoLocal(identifier);
+      return r?.precio ?? null;
+    },
+  },
+  {
+    tipos: [INSTRUMENTO_TIPO.FCI],
+    fetchPrecio: async (ins) => {
+      const codigoCafci = Number(ins.codigo);
+      if (!Number.isFinite(codigoCafci)) return null;
+      const r = await getCotizacionFciLocal(codigoCafci);
+      return r?.precio_actual ?? null;
+    },
+  },
+];
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -40,9 +88,7 @@ export const Instrumentos = () => {
     useState<Instrumento | null>(null);
   const [soloActivas, setSoloActivas] = useState(true);
   const [density, setDensity] = useState<Density>("comfortable");
-  const [preciosInternacionales, setPreciosInternacionales] = useState<
-    Record<string, number | string>
-  >({});
+  const updatePreciosInstrumentos = useUpdateInstrumentoPrecios();
 
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
@@ -52,30 +98,26 @@ export const Instrumentos = () => {
       { accessorKey: "clase_renta", header: "Clase Renta", size: 140 },
       { accessorKey: "moneda", header: "Moneda", size: 100 },
       {
+        accessorKey: "precios",
         id: "precio",
         header: "Precio",
         size: 140,
         Cell: ({ row }) => {
-          const ins = row.original as Instrumento;
-          //if (ins.tipo !== INSTRUMENTO_TIPO.CRIPTO) return null;
-          const p = preciosInternacionales[ins.id];
-          if (p == null || p === "") return null;
-          if (typeof p === "number") {
-            try {
-              return new Intl.NumberFormat(undefined, {
-                style: "currency",
-                currency: "USD",
-                maximumFractionDigits: 2,
-              }).format(p as number);
-            } catch {
-              return String(p);
-            }
+          const p = row.original.precios;
+          if (p == null) return null;
+          try {
+            return new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency: "USD",
+              maximumFractionDigits: 2,
+            }).format(p);
+          } catch {
+            return String(p);
           }
-          return String(p);
         },
       },
     ],
-    [preciosInternacionales],
+    [],
   );
 
   const { isError, isLoading, data } = useFetchInstrumentos(soloActivas);
@@ -131,48 +173,48 @@ export const Instrumentos = () => {
     await actualizarInstrumento(instrumentoEdit);
   };
 
+  const instrumentosConFetcher = useMemo(() => {
+    const pairs: { ins: Instrumento; fetcher: PrecioFetcher }[] = [];
+    for (const fetcher of PRECIO_FETCHERS) {
+      for (const ins of data) {
+        if (ins.tipo && fetcher.tipos.includes(ins.tipo)) {
+          pairs.push({ ins, fetcher });
+        }
+      }
+    }
+    return pairs;
+  }, [data]);
+
+  const instrumentosConFetcherKey = instrumentosConFetcher
+    .map((p) => p.ins.id)
+    .sort()
+    .join(",");
+
   useEffect(() => {
-    const fetchPrecioInstrumentosInternacionales = async () => {
-      if (!data || data.length === 0) return;
-      const tiposInstrumentosInternacionales: string[] = [
-        INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
-        INSTRUMENTO_TIPO.ETF,
-        INSTRUMENTO_TIPO.FCI_EXTERIOR,
-        INSTRUMENTO_TIPO.CRIPTO,
-      ];
+    if (instrumentosConFetcher.length === 0) return;
 
-      const instrumentos_internacionales = data.filter(
-        (i) => i.tipo && tiposInstrumentosInternacionales.includes(i.tipo),
-      );
-      if (instrumentos_internacionales.length === 0)
-        return setPreciosInternacionales({});
-
+    const fetchPrecios = async () => {
       const results = await Promise.allSettled(
-        instrumentos_internacionales.map(async (ins) => {
-          try {
-            const identifier = ins.codigo ?? ins.nombre;
-            const response = await getCotizacionInstrumentoExterior(identifier);
-
-            const precioVal = response?.price ?? null;
-            return { id: ins.id, precio: precioVal } as {
-              id: string;
-              precio: number | null;
-            };
-          } catch (e) {
-            return { id: ins.id, precio: null };
-          }
-        }),
+        instrumentosConFetcher.map(async ({ ins, fetcher }) => ({
+          id: ins.id,
+          precio: await fetcher.fetchPrecio(ins),
+        })),
       );
-      const map: Record<string, number | string> = {};
+
+      const priceById = new Map<string, number | null>();
       results.forEach((r) => {
         if (r.status === "fulfilled") {
-          map[r.value.id] = r.value.precio ?? "";
+          priceById.set(r.value.id, r.value.precio);
         }
       });
-      setPreciosInternacionales(map);
+      updatePreciosInstrumentos(priceById);
     };
-    fetchPrecioInstrumentosInternacionales();
-  }, [data]);
+    fetchPrecios();
+  }, [
+    instrumentosConFetcherKey,
+    updatePreciosInstrumentos,
+    instrumentosConFetcher,
+  ]);
 
   const table = useMaterialReactTable({
     columns,
@@ -190,7 +232,7 @@ export const Instrumentos = () => {
     }),
     initialState: {
       sorting: [{ id: "nombre", desc: false }],
-      pagination: { pageSize: 15, pageIndex: 0 },
+      pagination: { pageSize: 30, pageIndex: 0 },
     },
     state: {
       isLoading,

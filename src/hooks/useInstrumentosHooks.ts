@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchInstrumentos,
@@ -65,6 +66,26 @@ export const useEditarInstrumento = () => {
         queryKey: [QUERY_INSTRUMENTOS_FETCH],
       }),
   });
+};
+
+export const useUpdateInstrumentoPrecios = () => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    (priceById: Map<string, number | null>) => {
+      if (priceById.size === 0) return;
+      queryClient.setQueriesData<Instrumento[]>(
+        { queryKey: [QUERY_INSTRUMENTOS_FETCH] },
+        (prev) =>
+          prev?.map((ins) =>
+            priceById.has(ins.id)
+              ? { ...ins, precios: priceById.get(ins.id) ?? null }
+              : ins,
+          ),
+      );
+    },
+    [queryClient],
+  );
 };
 
 export const useFetchInstrumentos = (soloActivas: boolean = true) => {
