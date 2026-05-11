@@ -26,56 +26,12 @@ import {
   useEditarInstrumento,
   useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
-import {
-  getCotizacionFciLocal,
-  getCotizacionInstrumentoExterior,
-  getCotizacionInstrumentoLocal,
-} from "api/api";
-import { INSTRUMENTO_TIPO } from "utils/constants";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-
-type PrecioFetcher = {
-  tipos: string[];
-  fetchPrecio: (ins: Instrumento) => Promise<number | null>;
-};
-
-const PRECIO_FETCHERS: PrecioFetcher[] = [
-  {
-    tipos: [
-      INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
-      INSTRUMENTO_TIPO.ETF,
-      INSTRUMENTO_TIPO.FCI_EXTERIOR,
-      INSTRUMENTO_TIPO.CRIPTO,
-    ],
-    fetchPrecio: async (ins) => {
-      const identifier = ins.codigo ?? ins.nombre;
-      const r = await getCotizacionInstrumentoExterior(identifier);
-      return r?.price ?? null;
-    },
-  },
-  {
-    tipos: [
-      INSTRUMENTO_TIPO.ACCION_LOCAL,
-      INSTRUMENTO_TIPO.BONO,
-      INSTRUMENTO_TIPO.CEDEAR,
-      INSTRUMENTO_TIPO.ON,
-    ],
-    fetchPrecio: async (ins) => {
-      const identifier = ins.codigo ?? ins.nombre;
-      const r = await getCotizacionInstrumentoLocal(identifier);
-      return r?.precio ?? null;
-    },
-  },
-  {
-    tipos: [INSTRUMENTO_TIPO.FCI],
-    fetchPrecio: async (ins) => {
-      const codigoCafci = Number(ins.codigo);
-      if (!Number.isFinite(codigoCafci)) return null;
-      const r = await getCotizacionFciLocal(codigoCafci);
-      return r?.precio_actual ?? null;
-    },
-  },
-];
+import {
+  fetchPrecioWithCache,
+  PRECIO_FETCHERS,
+  type PrecioFetcher,
+} from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -197,7 +153,7 @@ export const Instrumentos = () => {
       const results = await Promise.allSettled(
         instrumentosConFetcher.map(async ({ ins, fetcher }) => ({
           id: ins.id,
-          precio: await fetcher.fetchPrecio(ins),
+          precio: await fetchPrecioWithCache(ins, fetcher),
         })),
       );
 
