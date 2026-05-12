@@ -11,44 +11,6 @@ export type PrecioFetcher = {
   fetchPrecio: (ins: Instrumento) => Promise<number | null>;
 };
 
-export const PRECIO_FETCHERS: PrecioFetcher[] = [
-  {
-    tipos: [
-      INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
-      INSTRUMENTO_TIPO.ETF,
-      INSTRUMENTO_TIPO.FCI_EXTERIOR,
-      INSTRUMENTO_TIPO.CRIPTO,
-    ],
-    fetchPrecio: async (ins) => {
-      const identifier = ins.codigo ?? ins.nombre;
-      const r = await getCotizacionInstrumentoExterior(identifier);
-      return r?.price ?? null;
-    },
-  },
-  {
-    tipos: [
-      INSTRUMENTO_TIPO.ACCION_LOCAL,
-      INSTRUMENTO_TIPO.BONO,
-      INSTRUMENTO_TIPO.CEDEAR,
-      INSTRUMENTO_TIPO.ON,
-    ],
-    fetchPrecio: async (ins) => {
-      const identifier = ins.codigo ?? ins.nombre;
-      const r = await getCotizacionInstrumentoLocal(identifier);
-      return r?.precio ?? null;
-    },
-  },
-  {
-    tipos: [INSTRUMENTO_TIPO.FCI],
-    fetchPrecio: async (ins) => {
-      const codigoCafci = Number(ins.codigo);
-      if (!Number.isFinite(codigoCafci)) return null;
-      const r = await getCotizacionFciLocal(codigoCafci);
-      return r?.precio_actual ?? null;
-    },
-  },
-];
-
 const PRECIO_STORAGE_PREFIX = "instrumento_precio:";
 
 type StoredPrecio = {
@@ -92,15 +54,52 @@ const writeCachedPrecio = (ins: Instrumento, precio: number | null): void => {
   }
 };
 
-export const fetchPrecioWithCache = async (
-  ins: Instrumento,
-  fetcher: PrecioFetcher,
-): Promise<number | null> => {
-  const cached = readCachedPrecio(ins);
-  if (cached && cached.fecha === todayISO()) {
-    return cached.precio;
-  }
-  const precio = await fetcher.fetchPrecio(ins);
-  writeCachedPrecio(ins, precio);
-  return precio;
-};
+const withCache =
+  (fetchPrecio: (ins: Instrumento) => Promise<number | null>) =>
+  async (ins: Instrumento): Promise<number | null> => {
+    const cached = readCachedPrecio(ins);
+    if (cached && cached.fecha === todayISO()) {
+      return cached.precio;
+    }
+    const precio = await fetchPrecio(ins);
+    writeCachedPrecio(ins, precio);
+    return precio;
+  };
+
+export const PRECIO_FETCHERS: PrecioFetcher[] = [
+  {
+    tipos: [
+      INSTRUMENTO_TIPO.ACCION_INTERNACIONAL,
+      INSTRUMENTO_TIPO.ETF,
+      INSTRUMENTO_TIPO.FCI_EXTERIOR,
+      INSTRUMENTO_TIPO.CRIPTO,
+    ],
+    fetchPrecio: withCache(async (ins) => {
+      const identifier = ins.codigo ?? ins.nombre;
+      const r = await getCotizacionInstrumentoExterior(identifier);
+      return r?.price ?? null;
+    }),
+  },
+  {
+    tipos: [
+      INSTRUMENTO_TIPO.ACCION_LOCAL,
+      INSTRUMENTO_TIPO.BONO,
+      INSTRUMENTO_TIPO.CEDEAR,
+      INSTRUMENTO_TIPO.ON,
+    ],
+    fetchPrecio: withCache(async (ins) => {
+      const identifier = ins.codigo ?? ins.nombre;
+      const r = await getCotizacionInstrumentoLocal(identifier);
+      return r?.precio ?? null;
+    }),
+  },
+  {
+    tipos: [INSTRUMENTO_TIPO.FCI],
+    fetchPrecio: withCache(async (ins) => {
+      const codigoCafci = Number(ins.codigo);
+      if (!Number.isFinite(codigoCafci)) return null;
+      const r = await getCotizacionFciLocal(codigoCafci);
+      return r?.precio_actual ?? null;
+    }),
+  },
+];

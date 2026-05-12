@@ -27,11 +27,7 @@ import {
   useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-import {
-  fetchPrecioWithCache,
-  PRECIO_FETCHERS,
-  type PrecioFetcher,
-} from "./utils";
+import { PRECIO_FETCHERS, type PrecioFetcher } from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -149,23 +145,22 @@ export const Instrumentos = () => {
   useEffect(() => {
     if (instrumentosConFetcher.length === 0) return;
 
-    const fetchPrecios = async () => {
-      const results = await Promise.allSettled(
-        instrumentosConFetcher.map(async ({ ins, fetcher }) => ({
-          id: ins.id,
-          precio: await fetchPrecioWithCache(ins, fetcher),
-        })),
-      );
+    let cancelled = false;
+    instrumentosConFetcher.forEach(({ ins, fetcher }) => {
+      fetcher
+        .fetchPrecio(ins)
+        .then((precio) => {
+          if (cancelled) return;
+          updatePreciosInstrumentos(new Map([[ins.id, precio]]));
+        })
+        .catch(() => {
+          // ignore — instrumento keeps its previous precio
+        });
+    });
 
-      const priceById = new Map<string, number | null>();
-      results.forEach((r) => {
-        if (r.status === "fulfilled") {
-          priceById.set(r.value.id, r.value.precio);
-        }
-      });
-      updatePreciosInstrumentos(priceById);
+    return () => {
+      cancelled = true;
     };
-    fetchPrecios();
   }, [
     instrumentosConFetcherKey,
     updatePreciosInstrumentos,
