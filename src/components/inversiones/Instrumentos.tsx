@@ -27,7 +27,13 @@ import {
   useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-import { PRECIO_FETCHERS, type PrecioFetcher } from "./utils";
+// import { createPrecio } from "api/api";
+import {
+  PRECIO_FETCHERS,
+  findTodayPrecio,
+  todayISO,
+  type PrecioFetcher,
+} from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -55,7 +61,7 @@ export const Instrumentos = () => {
         header: "Precio",
         size: 140,
         Cell: ({ row }) => {
-          const p = row.original.precios;
+          const p = findTodayPrecio(row.original.precios)?.monto;
           if (p == null) return null;
           try {
             return new Intl.NumberFormat(undefined, {
@@ -129,7 +135,11 @@ export const Instrumentos = () => {
     const pairs: { ins: Instrumento; fetcher: PrecioFetcher }[] = [];
     for (const fetcher of PRECIO_FETCHERS) {
       for (const ins of data) {
-        if (ins.tipo && fetcher.tipos.includes(ins.tipo)) {
+        if (
+          ins.tipo &&
+          fetcher.tipos.includes(ins.tipo) &&
+          !findTodayPrecio(ins.precios)
+        ) {
           pairs.push({ ins, fetcher });
         }
       }
@@ -149,12 +159,24 @@ export const Instrumentos = () => {
     instrumentosConFetcher.forEach(({ ins, fetcher }) => {
       fetcher
         .fetchPrecio(ins)
-        .then((precio) => {
+        .then(async (monto) => {
+          if (cancelled || monto == null) return;
+          // const nuevoPrecio = await createPrecio({
+          //   monto,
+          //   fecha: todayISO(),
+          //   instrumento_id: ins.id,
+          // });
+          const nuevoPrecio = {
+            id: `local-${ins.id}-${todayISO()}`,
+            monto,
+            fecha: todayISO(),
+            instrumentoId: ins.id,
+          };
           if (cancelled) return;
-          updatePreciosInstrumentos(new Map([[ins.id, precio]]));
+          updatePreciosInstrumentos(new Map([[ins.id, nuevoPrecio]]));
         })
         .catch(() => {
-          // ignore — instrumento keeps its previous precio
+          // ignore — instrumento keeps its previous precios
         });
     });
 

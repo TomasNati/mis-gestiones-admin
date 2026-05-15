@@ -6,7 +6,7 @@ import {
   actualizarInstrumento,
   eliminarInstrumento,
 } from "api/api";
-import type { Instrumento } from "model/types";
+import type { Instrumento, Precio } from "model/types";
 import { QUERY_INSTRUMENTOS_FETCH } from "utils/constants";
 import type { InstrumentoBase, InstrumentoEdit } from "model/models";
 
@@ -72,16 +72,19 @@ export const useUpdateInstrumentoPrecios = () => {
   const queryClient = useQueryClient();
 
   return useCallback(
-    (priceById: Map<string, number | null>) => {
-      if (priceById.size === 0) return;
+    (precioByInstrumentoId: Map<string, Precio>) => {
+      if (precioByInstrumentoId.size === 0) return;
       queryClient.setQueriesData<Instrumento[]>(
         { queryKey: [QUERY_INSTRUMENTOS_FETCH] },
         (prev) =>
-          prev?.map((ins) =>
-            priceById.has(ins.id)
-              ? { ...ins, precios: priceById.get(ins.id) ?? null }
-              : ins,
-          ),
+          prev?.map((ins) => {
+            const nuevoPrecio = precioByInstrumentoId.get(ins.id);
+            if (!nuevoPrecio) return ins;
+            return {
+              ...ins,
+              precios: [...(ins.precios ?? []), nuevoPrecio],
+            };
+          }),
       );
     },
     [queryClient],

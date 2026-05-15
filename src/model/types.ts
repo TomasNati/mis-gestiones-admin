@@ -22,12 +22,19 @@ export interface SubcategoriaEditPayload extends BasicEntity {
 export type InstrumentoTipo =
   (typeof INSTRUMENTO_TIPO)[keyof typeof INSTRUMENTO_TIPO];
 
+export interface Precio {
+  id: string;
+  monto: number;
+  instrumentoId: string;
+  fecha: string;
+}
+
 export interface Instrumento extends BasicEntity {
   codigo?: string | null;
   tipo?: InstrumentoTipo | null;
   clase_renta?: string | null;
   moneda?: string | null;
-  precios?: number | null;
+  precios?: Precio[] | null;
 }
 
 export interface CryptoQuoteResponse {

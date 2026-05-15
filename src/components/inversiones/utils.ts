@@ -1,4 +1,4 @@
-import type { Instrumento } from "model/types";
+import type { Instrumento, Precio } from "model/types";
 import {
   getCotizacionFciLocal,
   getCotizacionInstrumentoExterior,
@@ -18,12 +18,20 @@ type StoredPrecio = {
   fecha: string;
 };
 
-const todayISO = (): string => {
+export const todayISO = (): string => {
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
+};
+
+export const findTodayPrecio = (
+  precios: Precio[] | null | undefined,
+): Precio | undefined => {
+  if (!precios?.length) return undefined;
+  const today = todayISO();
+  return precios.find((p) => p.fecha?.slice(0, 10) === today);
 };
 
 const storageKey = (ins: Instrumento): string | null => {
