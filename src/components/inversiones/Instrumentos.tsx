@@ -27,7 +27,7 @@ import {
   useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-// import { createPrecio } from "api/api";
+import { createPrecio } from "api/api";
 import {
   PRECIO_FETCHERS,
   findTodayPrecio,
@@ -161,17 +161,11 @@ export const Instrumentos = () => {
         .fetchPrecio(ins)
         .then(async (monto) => {
           if (cancelled || monto == null) return;
-          // const nuevoPrecio = await createPrecio({
-          //   monto,
-          //   fecha: todayISO(),
-          //   instrumento_id: ins.id,
-          // });
-          const nuevoPrecio = {
-            id: `local-${ins.id}-${todayISO()}`,
+          const nuevoPrecio = await createPrecio({
             monto,
             fecha: todayISO(),
-            instrumentoId: ins.id,
-          };
+            instrumento_id: ins.id,
+          });
           if (cancelled) return;
           updatePreciosInstrumentos(new Map([[ins.id, nuevoPrecio]]));
         })
