@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   type Categoria,
+  type Precio,
   type Subcategoria,
   type SubcategoriaEditPayload,
 } from "model/types";
@@ -112,6 +113,15 @@ export const eliminarInstrumento = async (instrumentoId: string) => {
     `/inversiones/instrumento/${instrumentoId}`,
   );
   return response.status == 204;
+};
+
+export const createPrecio = async (payload: {
+  monto: number;
+  fecha: string;
+  instrumento_id: string;
+}): Promise<Precio> => {
+  const { data } = await apiClient.post<Precio>(`/inversiones/precio`, payload);
+  return data;
 };
 
 export const getCotizacionFciLocal = async (
