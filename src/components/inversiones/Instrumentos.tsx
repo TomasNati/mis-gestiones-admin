@@ -17,17 +17,16 @@ import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import { FiltroActivas } from "components/FiltroActivas";
 import { styles } from "../gestiones/styles";
 import { type Density } from "utils/types";
-import type { Instrumento } from "model/types";
+import type { Instrumento, Precio } from "model/types";
 import type { InstrumentoEdit } from "model/models";
 import {
   useFetchInstrumentos,
   useCreateInstrumento,
   useDeleteInstrumento,
   useEditarInstrumento,
-  useUpdateInstrumentoPrecios,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-import { createPrecio } from "api/api";
+// import { createPrecio } from "api/api";
 import {
   PRECIO_FETCHERS,
   findTodayPrecio,
@@ -46,7 +45,9 @@ export const Instrumentos = () => {
     useState<Instrumento | null>(null);
   const [soloActivas, setSoloActivas] = useState(true);
   const [density, setDensity] = useState<Density>("comfortable");
-  const updatePreciosInstrumentos = useUpdateInstrumentoPrecios();
+  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<
+    Map<string, Precio>
+  >(new Map());
 
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
@@ -61,8 +62,9 @@ export const Instrumentos = () => {
         header: "Precio",
         size: 140,
         Cell: ({ row }) => {
-          const p = findTodayPrecio(row.original.precios)?.monto;
-          if (p == null) return null;
+          const precio = preciosPorInstrumento.get(row.original.id);
+          if (precio == null) return "—";
+          const p = precio.monto;
           try {
             return new Intl.NumberFormat(undefined, {
               style: "currency",
@@ -75,7 +77,7 @@ export const Instrumentos = () => {
         },
       },
     ],
-    [],
+    [preciosPorInstrumento],
   );
 
   const { isError, isLoading, data } = useFetchInstrumentos(soloActivas);
@@ -131,57 +133,39 @@ export const Instrumentos = () => {
     await actualizarInstrumento(instrumentoEdit);
   };
 
-  const instrumentosConFetcher = useMemo(() => {
-    const pairs: { ins: Instrumento; fetcher: PrecioFetcher }[] = [];
-    for (const fetcher of PRECIO_FETCHERS) {
-      for (const ins of data) {
-        if (
-          ins.tipo &&
-          fetcher.tipos.includes(ins.tipo) &&
-          !findTodayPrecio(ins.precios)
-        ) {
-          pairs.push({ ins, fetcher });
-        }
-      }
-    }
-    return pairs;
-  }, [data]);
-
-  const instrumentosConFetcherKey = instrumentosConFetcher
-    .map((p) => p.ins.id)
-    .sort()
-    .join(",");
-
   useEffect(() => {
-    if (instrumentosConFetcher.length === 0) return;
-
     let cancelled = false;
-    instrumentosConFetcher.forEach(({ ins, fetcher }) => {
-      fetcher
-        .fetchPrecio(ins)
-        .then(async (monto) => {
-          if (cancelled || monto == null) return;
-          const nuevoPrecio = await createPrecio({
-            monto,
+
+    for (const ins of data ?? []) {
+      const fetcher = PRECIO_FETCHERS.find((f) =>
+        f.tipos.includes(ins.tipo || ""),
+      );
+      console.log(
+        "fetcher for",
+        ins.nombre,
+        ":",
+        fetcher ? "found" : "not found",
+      );
+      if (!fetcher) continue;
+      fetcher.fetchPrecio(ins).then((precio) => {
+        if (cancelled || precio == null) return;
+        setPreciosPorInstrumento((prev) => {
+          const next = new Map(prev);
+          next.set(ins.id, {
+            id: "",
+            monto: precio,
+            instrumentoId: ins.id,
             fecha: todayISO(),
-            instrumento_id: ins.id,
           });
-          if (cancelled) return;
-          updatePreciosInstrumentos(new Map([[ins.id, nuevoPrecio]]));
-        })
-        .catch(() => {
-          // ignore — instrumento keeps its previous precios
+          return next;
         });
-    });
+      });
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [
-    instrumentosConFetcherKey,
-    updatePreciosInstrumentos,
-    instrumentosConFetcher,
-  ]);
+  }, [data]);
 
   const table = useMaterialReactTable({
     columns,

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchInstrumentos,
@@ -6,7 +5,7 @@ import {
   actualizarInstrumento,
   eliminarInstrumento,
 } from "api/api";
-import type { Instrumento, Precio } from "model/types";
+import type { Instrumento } from "model/types";
 import { QUERY_INSTRUMENTOS_FETCH } from "utils/constants";
 import type { InstrumentoBase, InstrumentoEdit } from "model/models";
 
@@ -66,29 +65,6 @@ export const useEditarInstrumento = () => {
         queryKey: [QUERY_INSTRUMENTOS_FETCH],
       }),
   });
-};
-
-export const useUpdateInstrumentoPrecios = () => {
-  const queryClient = useQueryClient();
-
-  return useCallback(
-    (precioByInstrumentoId: Map<string, Precio>) => {
-      if (precioByInstrumentoId.size === 0) return;
-      queryClient.setQueriesData<Instrumento[]>(
-        { queryKey: [QUERY_INSTRUMENTOS_FETCH] },
-        (prev) =>
-          prev?.map((ins) => {
-            const nuevoPrecio = precioByInstrumentoId.get(ins.id);
-            if (!nuevoPrecio) return ins;
-            return {
-              ...ins,
-              precios: [...(ins.precios ?? []), nuevoPrecio],
-            };
-          }),
-      );
-    },
-    [queryClient],
-  );
 };
 
 export const useFetchInstrumentos = (soloActivas: boolean = true) => {
