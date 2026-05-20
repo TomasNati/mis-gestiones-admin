@@ -27,12 +27,7 @@ import {
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
 // import { createPrecio } from "api/api";
-import {
-  PRECIO_FETCHERS,
-  findTodayPrecio,
-  todayISO,
-  type PrecioFetcher,
-} from "./utils";
+import { PRECIO_FETCHERS, todayISO } from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
