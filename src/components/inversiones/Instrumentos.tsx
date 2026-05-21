@@ -26,8 +26,8 @@ import {
   useEditarInstrumento,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-// import { createPrecio } from "api/api";
-import { PRECIO_FETCHERS, todayISO } from "./utils";
+import { createPrecio } from "api/api";
+import { PRECIO_FETCHERS, findTodayPrecio, todayISO } from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -131,30 +131,54 @@ export const Instrumentos = () => {
   useEffect(() => {
     let cancelled = false;
 
-    for (const ins of data ?? []) {
+    const instrumentos = data ?? [];
+    const existing = new Map<string, Precio>();
+    const toFetch: Instrumento[] = [];
+
+    for (const ins of instrumentos) {
+      const precioHoy = findTodayPrecio(ins.precios);
+      if (precioHoy) {
+        existing.set(ins.id, precioHoy);
+      } else {
+        toFetch.push(ins);
+      }
+    }
+
+    if (existing.size > 0) {
+      setPreciosPorInstrumento((prev) => {
+        const next = new Map(prev);
+        for (const [id, precio] of existing) next.set(id, precio);
+        return next;
+      });
+    }
+
+    for (const ins of toFetch) {
       const fetcher = PRECIO_FETCHERS.find((f) =>
         f.tipos.includes(ins.tipo || ""),
       );
-      console.log(
-        "fetcher for",
-        ins.nombre,
-        ":",
-        fetcher ? "found" : "not found",
-      );
       if (!fetcher) continue;
-      fetcher.fetchPrecio(ins).then((precio) => {
-        if (cancelled || precio == null) return;
-        setPreciosPorInstrumento((prev) => {
-          const next = new Map(prev);
-          next.set(ins.id, {
-            id: "",
+      fetcher
+        .fetchPrecio(ins)
+        .then(async (precio) => {
+          if (cancelled || precio == null) return;
+          const created = await createPrecio({
             monto: precio,
-            instrumentoId: ins.id,
             fecha: todayISO(),
+            instrumento_id: ins.id,
           });
-          return next;
+          if (cancelled) return;
+          setPreciosPorInstrumento((prev) => {
+            const next = new Map(prev);
+            next.set(ins.id, created);
+            return next;
+          });
+        })
+        .catch((error) => {
+          console.error(
+            `Failed to fetch/create precio for instrumento ${ins.id}:`,
+            error,
+          );
         });
-      });
     }
 
     return () => {
