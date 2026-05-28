@@ -86,8 +86,9 @@ export const eliminarSubcategoria = async (subcategoriaId: string) => {
 };
 
 export const fetchInstrumentos = async (soloActivas: boolean = true) => {
-  const response = await apiClient.get(
-    `/inversiones/instrumentos?${soloActivas ? "active=true" : ""}`,
+  const response = await apiClient.post(
+    '/inversiones/instrumentos',
+    { active: soloActivas },
   );
   return response.data;
 };
