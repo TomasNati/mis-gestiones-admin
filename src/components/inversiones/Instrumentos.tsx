@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -17,7 +17,7 @@ import { DeleteConfirmationDialog } from "dialogs/DeleteConfirmationDialog";
 import { FiltroActivas } from "components/FiltroActivas";
 import { styles } from "../gestiones/styles";
 import { type Density } from "utils/types";
-import type { Instrumento, Precio } from "model/types";
+import type { Instrumento } from "model/types";
 import type { InstrumentoEdit } from "model/models";
 import {
   useFetchInstrumentos,
@@ -26,8 +26,6 @@ import {
   useEditarInstrumento,
 } from "hooks/useInstrumentosHooks";
 import { InstrumentoCreateEditDialog } from "dialogs/InstrumentoCreateEditDialog";
-import { createPrecio } from "api/api";
-import { PRECIO_FETCHERS, findTodayPrecio, todayISO } from "./utils";
 
 export const Instrumentos = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -40,9 +38,6 @@ export const Instrumentos = () => {
     useState<Instrumento | null>(null);
   const [soloActivas, setSoloActivas] = useState(true);
   const [density, setDensity] = useState<Density>("comfortable");
-  const [preciosPorInstrumento, setPreciosPorInstrumento] = useState<
-    Map<string, Precio>
-  >(new Map());
 
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
@@ -51,28 +46,8 @@ export const Instrumentos = () => {
       { accessorKey: "tipo", header: "Tipo", size: 120 },
       { accessorKey: "clase_renta", header: "Clase Renta", size: 140 },
       { accessorKey: "moneda", header: "Moneda", size: 100 },
-      {
-        accessorKey: "precios",
-        id: "precio",
-        header: "Precio",
-        size: 140,
-        Cell: ({ row }) => {
-          const precio = preciosPorInstrumento.get(row.original.id);
-          if (precio == null) return "—";
-          const p = precio.monto;
-          try {
-            return new Intl.NumberFormat(undefined, {
-              style: "currency",
-              currency: "USD",
-              maximumFractionDigits: 2,
-            }).format(p);
-          } catch {
-            return String(p);
-          }
-        },
-      },
     ],
-    [preciosPorInstrumento],
+    [],
   );
 
   const { isError, isLoading, data } = useFetchInstrumentos(soloActivas);
@@ -127,64 +102,6 @@ export const Instrumentos = () => {
     } as unknown as InstrumentoEdit;
     await actualizarInstrumento(instrumentoEdit);
   };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const instrumentos = data ?? [];
-    const existing = new Map<string, Precio>();
-    const toFetch: Instrumento[] = [];
-
-    for (const ins of instrumentos) {
-      const precioHoy = findTodayPrecio(ins.precios);
-      if (precioHoy) {
-        existing.set(ins.id, precioHoy);
-      } else {
-        toFetch.push(ins);
-      }
-    }
-
-    if (existing.size > 0) {
-      setPreciosPorInstrumento((prev) => {
-        const next = new Map(prev);
-        for (const [id, precio] of existing) next.set(id, precio);
-        return next;
-      });
-    }
-
-    for (const ins of toFetch) {
-      const fetcher = PRECIO_FETCHERS.find((f) =>
-        f.tipos.includes(ins.tipo || ""),
-      );
-      if (!fetcher) continue;
-      fetcher
-        .fetchPrecio(ins)
-        .then(async (precio) => {
-          if (cancelled || precio == null) return;
-          const created = await createPrecio({
-            monto: precio,
-            fecha: todayISO(),
-            instrumento_id: ins.id,
-          });
-          if (cancelled) return;
-          setPreciosPorInstrumento((prev) => {
-            const next = new Map(prev);
-            next.set(ins.id, created);
-            return next;
-          });
-        })
-        .catch((error) => {
-          console.error(
-            `Failed to fetch/create precio for instrumento ${ins.id}:`,
-            error,
-          );
-        });
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [data]);
 
   const table = useMaterialReactTable({
     columns,
