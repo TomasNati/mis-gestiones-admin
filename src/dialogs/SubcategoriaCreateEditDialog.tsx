@@ -19,6 +19,8 @@ import { useEffect } from "react";
 import type { Categoria } from "model/types";
 import { formatErrors } from "model/utils";
 
+const TIPOS_DE_GASTO = ["FIJO", "VARIABLE"] as const;
+
 interface SubcategoriaCreateEditDialogProps {
   open: boolean;
   initialSubcategory: Partial<SubcategoriaEdit>;
@@ -38,11 +40,13 @@ export const SubcategoriaCreateEditDialog = ({
     ? subcategoriaEditSchema
     : subcategoriaBaseSchema;
 
+  const defaultValues = initialSubcategory;
+
   const { register, handleSubmit, control, formState, reset } = useForm<
     SubcategoriaBase | SubcategoriaEdit
   >({
     resolver: zodResolver(schema),
-    defaultValues: initialSubcategory,
+    defaultValues,
   });
 
   useEffect(() => {
@@ -92,6 +96,38 @@ export const SubcategoriaCreateEditDialog = ({
                 )}
               />
             )}
+          />
+
+          <Controller
+            name="tipoDeGasto"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Autocomplete
+                options={[...TIPOS_DE_GASTO]}
+                value={field.value ?? null}
+                onChange={(_, value) => field.onChange(value)}
+                getOptionLabel={(tipo) =>
+                  tipo === "FIJO" ? "Fijo" : "Variable"
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tipo De Gasto"
+                    margin="normal"
+                    fullWidth
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+            )}
+          />
+
+          <TextField
+            label="Comprobantes Path"
+            fullWidth
+            margin="normal"
+            {...register("comprobantesPath")}
           />
 
           <TextField

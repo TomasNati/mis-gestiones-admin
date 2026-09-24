@@ -7,16 +7,22 @@ export interface BasicEntity {
   active: boolean;
 }
 
+export type TipoDeGasto = "FIJO" | "VARIABLE";
+
 export interface Categoria extends BasicEntity {
   subcategorias?: Subcategoria[];
 }
 
 export interface Subcategoria extends BasicEntity {
   categoria: Categoria;
+  tipoDeGasto?: TipoDeGasto | null;
+  comprobantesPath?: string | null;
 }
 
 export interface SubcategoriaEditPayload extends BasicEntity {
   categoriaId: string;
+  tipoDeGasto?: TipoDeGasto | null;
+  comprobantesPath?: string | null;
 }
 
 export type InstrumentoTipo =

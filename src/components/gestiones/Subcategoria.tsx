@@ -43,6 +43,14 @@ export const Subcategorias = ({
         header: "Subcategoria",
       },
       {
+        accessorKey: "tipoDeGasto",
+        header: "Tipo De Gasto",
+      },
+      {
+        accessorKey: "comprobantesPath",
+        header: "Comprobantes",
+      },
+      {
         accessorKey: "comentarios",
         header: "Comentarios",
       },
