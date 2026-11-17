@@ -42,6 +42,7 @@ export const Instrumentos = () => {
   const columns = useMemo<MRT_ColumnDef<Instrumento>[]>(
     () => [
       { accessorKey: "nombre", header: "Nombre", size: 200 },
+      { accessorKey: "nombreCorto", header: "Nombre corto", size: 120 },
       { accessorKey: "codigo", header: "Código", size: 120 },
       { accessorKey: "tipo", header: "Tipo", size: 120 },
       { accessorKey: "clase_renta", header: "Clase Renta", size: 140 },

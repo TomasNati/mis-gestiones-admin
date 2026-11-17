@@ -90,6 +90,15 @@ export const InstrumentoCreateEditDialog = ({
             helperText={errors.nombre?.message}
           />
           <TextField
+            label="Nombre corto"
+            fullWidth
+            margin="normal"
+            required
+            {...register("nombreCorto")}
+            error={!!errors.nombreCorto}
+            helperText={errors.nombreCorto?.message}
+          />
+          <TextField
             label="Código"
             fullWidth
             margin="normal"

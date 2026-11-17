@@ -31,6 +31,11 @@ export type SubcategoriaEdit = z.infer<typeof subcategoriaEditSchema>;
 export const instrumentoBaseSchema = z.object({
   nombre: z.string().trim().min(1, "Nombre es requerido"),
   codigo: z.string().optional().nullable(),
+  nombreCorto: z
+    .string()
+    .trim()
+    .min(1, "Nombre corto es requerido")
+    .max(50, "Máximo 50 caracteres"),
   tipo: z.string().min(1, "Tipo es requerido"),
   clase_renta: z.string().min(1, "Clase de Renta es requerida"),
   moneda: z.string().min(1, "Moneda es requerida"),

@@ -37,6 +37,7 @@ export interface Precio {
 
 export interface Instrumento extends BasicEntity {
   codigo?: string | null;
+  nombreCorto: string;
   tipo?: InstrumentoTipo | null;
   clase_renta?: string | null;
   moneda?: string | null;
